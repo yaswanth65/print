@@ -8,7 +8,6 @@ import { PreviewPanel } from '@/components/preview/PreviewPanel';
 export default function Home() {
   const printRef = useRef<HTMLDivElement>(null);
 
-  // Prevent default save to allow our own if needed, or just let standard browser behavior happen
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Prevent ctrl+s to maybe trigger our print instead, but let's leave it standard for now.
