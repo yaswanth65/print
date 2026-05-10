@@ -1,9 +1,10 @@
-import { pgTable, uuid, varchar, jsonb, timestamp, integer, text, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, jsonb, timestamp, integer, text, pgEnum, date } from 'drizzle-orm/pg-core';
 
 export const documentStatusEnum = pgEnum('document_status', ['PENDING_PAYMENT', 'PAID']);
 export const entryTypeEnum = pgEnum('entry_type', ['DOCUMENT_PAYMENT', 'MANUAL_CASH_ADDITION']);
 export const paymentMethodEnum = pgEnum('payment_method', ['CASH', 'UPI']);
 export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'MANAGER', 'OPERATOR']);
+export const attendanceStatusEnum = pgEnum('attendance_status', ['PRESENT', 'ABSENT', 'HALF_DAY']);
 
 export const documents = pgTable('documents', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -21,7 +22,7 @@ export const transactions = pgTable('transactions', {
   id: uuid('id').primaryKey().defaultRandom(),
   document_id: uuid('document_id'),
   customer_name: varchar('customer_name', { length: 255 }),
-  document_title: varchar('document_title', { length: 255 }).notNull(),
+  document_title: varchar('document_title', { length: 255 }),
   entry_type: entryTypeEnum('entry_type').notNull(),
   payment_method: paymentMethodEnum('payment_method'),
   bill_amount: integer('bill_amount'),
@@ -45,7 +46,15 @@ export const counter_cash_entries = pgTable('counter_cash_entries', {
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
+  phone: varchar('phone', { length: 20 }),
+  active: varchar('active', { length: 5 }).default('true'),
   role: userRoleEnum('role').notNull(),
 });
 
-
+export const attendance = pgTable('attendance', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  user_id: uuid('user_id').notNull(),
+  date: date('date').notNull(),
+  status: attendanceStatusEnum('status').notNull(),
+  created_at: timestamp('created_at').defaultNow(),
+});

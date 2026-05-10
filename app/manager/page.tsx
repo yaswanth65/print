@@ -1,10 +1,60 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getDashboardMetrics, addManualCash, getPendingDocuments, markDocumentPaid } from '@/app/actions/app-actions';
+import { getDashboardMetrics, addManualCash, createIndependentPayment } from '@/app/actions/app-actions';
 
-export default function ManagerMobile() {
-  const [activeTab, setActiveTab] = useState<'pending' | 'cash'>('pending');
+type Lang = 'en' | 'te';
+
+const t: Record<Lang, Record<string, string>> = {
+  en: {
+    counterCash: 'COUNTER CASH',
+    addCash: 'ADD CASH',
+    todaysEarnings: "TODAY'S EARNINGS",
+    upi: 'UPI',
+    cash: 'CASH',
+    paymentEntry: 'PAYMENT ENTRY',
+    amount: 'AMOUNT',
+    enterAmount: 'Enter Amount',
+    receivedAmount: 'RECEIVED AMOUNT',
+    changeDue: 'Change due:',
+    addPayment: 'ADD PAYMENT',
+    recentTransactions: 'Recent Transactions',
+    noTransactions: 'No recent transactions',
+    manual: '(Manual)',
+    cancel: 'Cancel',
+    add: 'Add',
+    amountPlaceholder: 'Amount',
+    enterReceived: 'Enter received amount',
+    english: 'English',
+    telugu: 'తెలుగు',
+  },
+  te: {
+    counterCash: 'కౌంటర్ క్యాష్',
+    addCash: 'క్యాష్ జోడించు',
+    todaysEarnings: 'నేటి ఆదాయం',
+    upi: 'యూపీఐ',
+    cash: 'క్యాష్',
+    paymentEntry: 'చెల్లింపు ఎంట్రీ',
+    amount: 'మొత్తం',
+    enterAmount: 'మొత్తం నమోదు చేయండి',
+    receivedAmount: 'అందిన మొత్తం',
+    changeDue: 'మారుదల:',
+    addPayment: 'చెల్లింపు జోడించు',
+    recentTransactions: 'ఇటీవలి లావాదేవీలు',
+    noTransactions: 'ఇటీవలి లావాదేవీలు లేవు',
+    manual: '(మాన్యువల్)',
+    cancel: 'రద్దు చేయి',
+    add: 'జోడించు',
+    amountPlaceholder: 'మొత్తం',
+    enterReceived: 'అందిన మొత్తం నమోదు చేయండి',
+    english: 'English',
+    telugu: 'తెలుగు',
+  },
+};
+
+export default function ManagerDashboard() {
+  const [lang, setLang] = useState<Lang>('en');
+
   const [stats, setStats] = useState<any>({
     counterCash: 0,
     todaysEarnings: 0,
@@ -12,59 +62,45 @@ export default function ManagerMobile() {
     cashTotal: 0,
     recentTransactions: [],
   });
-  const [pendingDocs, setPendingDocs] = useState<any[]>([]);
 
-  // Manual Cash State
-  const [cashAmount, setCashAmount] = useState('');
-  const [cashNotes, setCashNotes] = useState('');
-  const [isSubmittingCash, setIsSubmittingCash] = useState(false);
-
-  // Payment State
-  const [selectedDoc, setSelectedDoc] = useState<any>(null);
   const [billAmount, setBillAmount] = useState('');
   const [receivedAmount, setReceivedAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'UPI'>('UPI');
   const [isPaying, setIsPaying] = useState(false);
+  const [showAddCash, setShowAddCash] = useState(false);
+  const [cashAmount, setCashAmount] = useState('');
+  const [isSubmittingCash, setIsSubmittingCash] = useState(false);
+
+  const s = t[lang];
 
   const loadData = async () => {
     const metrics = await getDashboardMetrics();
     setStats(metrics);
-    const docs = await getPendingDocuments();
-    setPendingDocs(docs);
   };
 
   useEffect(() => {
     loadData();
   }, []);
 
-  const handleAddCash = async () => {
-    if (!cashAmount || isNaN(Number(cashAmount))) return;
-    setIsSubmittingCash(true);
-    await addManualCash(Number(cashAmount), cashNotes);
-    setIsSubmittingCash(false);
-    setCashAmount('');
-    setCashNotes('');
-    alert('Cash added to counter');
-    loadData();
-  };
-
   const handleCollectPayment = async () => {
-    if (!selectedDoc || !billAmount || !receivedAmount) return;
-    
+    if (!billAmount || isNaN(Number(billAmount))) return alert(lang === 'te' ? 'దయచేసి చెల్లుబాటు అయ్యే మొత్తం నమోదు చేయండి' : 'Please enter a valid bill amount');
+
+    let finalReceived = Number(billAmount);
+
+    if (paymentMethod === 'CASH') {
+      if (!receivedAmount || isNaN(Number(receivedAmount))) return alert(lang === 'te' ? 'దయచేసి అందిన మొత్తం నమోదు చేయండి' : 'Please enter the received cash amount');
+      if (Number(receivedAmount) < Number(billAmount)) return alert(lang === 'te' ? 'అందిన మొత్తం బిల్ మొత్తం కంటే తక్కువగా ఉండకూడదు' : 'Received amount cannot be less than bill amount');
+      finalReceived = Number(receivedAmount);
+    }
+
     setIsPaying(true);
-    
-    const finalReceived = paymentMethod === 'UPI' ? Number(billAmount) : Number(receivedAmount);
-    
-    const res = await markDocumentPaid(selectedDoc.id, Number(billAmount), finalReceived, paymentMethod);
+    const res = await createIndependentPayment(Number(billAmount), finalReceived, paymentMethod);
     setIsPaying(false);
-    
+
     if (res.success) {
       if (res.changeAmount && res.changeAmount > 0) {
-        alert(`Payment collected! Change to give: ₹${res.changeAmount}`);
-      } else {
-        alert('Payment collected successfully!');
+        alert(`${lang === 'te' ? 'చెల్లింపు సేకరించబడింది! మారుదల ఇవ్వండి:' : 'Payment collected! Give Change:'} ₹${res.changeAmount}`);
       }
-      setSelectedDoc(null);
       setBillAmount('');
       setReceivedAmount('');
       loadData();
@@ -73,138 +109,181 @@ export default function ManagerMobile() {
     }
   };
 
+  const handleAddCash = async () => {
+    if (!cashAmount || isNaN(Number(cashAmount))) return;
+    setIsSubmittingCash(true);
+    await addManualCash(Number(cashAmount), 'Added to counter');
+    setIsSubmittingCash(false);
+    setCashAmount('');
+    setShowAddCash(false);
+    loadData();
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-start justify-center pt-8 font-sans">
-      <div className="bg-white w-full max-w-[450px] min-h-[800px] border border-gray-300 shadow-sm flex flex-col items-center p-6 relative">
-        
-        {/* Top Stats */}
-        <div className="w-full flex justify-between items-center mb-4 gap-2">
-          <div className="border border-black py-2 px-2 flex-1 text-center text-xs font-medium uppercase tracking-wide bg-blue-50">
-            COUNTER CASH: ₹{stats.counterCash.toLocaleString('en-IN')}
-          </div>
-          <button 
-            onClick={() => setActiveTab('cash')}
-            className={`border border-black px-4 py-2 text-xs font-bold uppercase tracking-wide text-black transition-colors ${activeTab === 'cash' ? 'bg-[#68d371]' : 'bg-gray-100 hover:bg-[#68d371]'}`}
+    <div className="min-h-screen bg-[#eef1f6] flex items-start justify-center pt-0 pb-8">
+      <div className="w-full min-w-0 flex flex-col">
+
+        {/* Language Toggle */}
+        <div className="flex border-b border-gray-300">
+          <button
+            onClick={() => setLang('en')}
+            className={`flex-1 py-3 text-sm font-bold tracking-wide ${lang === 'en' ? 'bg-white text-[#0d7c6b] border-b-2 border-[#0d7c6b]' : 'bg-gray-100 text-gray-500'}`}
           >
-            ADD CASH
+            {s.english}
+          </button>
+          <button
+            onClick={() => setLang('te')}
+            className={`flex-1 py-3 text-sm font-bold tracking-wide ${lang === 'te' ? 'bg-white text-[#0d7c6b] border-b-2 border-[#0d7c6b]' : 'bg-gray-100 text-gray-500'}`}
+          >
+            {s.telugu}
           </button>
         </div>
 
-        <div className="w-full border border-black py-2 text-center text-xs font-medium uppercase tracking-wide mb-4">
-          TODAYS EARNINGS: ₹{stats.todaysEarnings.toLocaleString('en-IN')}
-        </div>
-
-        <div className="w-full flex justify-between gap-4 mb-8">
-          <div className="border border-black py-2 flex-1 text-center text-xs font-medium uppercase tracking-wide bg-white">
-            UPI : ₹{stats.upiTotal.toLocaleString('en-IN')}
-          </div>
-          <div className="border border-black py-2 flex-1 text-center text-xs font-medium uppercase tracking-wide bg-white">
-            CASH : ₹{stats.cashTotal.toLocaleString('en-IN')}
-          </div>
-        </div>
-
-        {/* Tabs Content */}
-        <div className="w-full flex border-b border-gray-200 mb-6">
-          <button onClick={() => setActiveTab('pending')} className={`flex-1 py-3 text-sm font-bold uppercase ${activeTab === 'pending' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}>
-            Pending Prints
-          </button>
-          <button onClick={() => setActiveTab('cash')} className={`flex-1 py-3 text-sm font-bold uppercase ${activeTab === 'cash' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}>
-            Manual Entry
-          </button>
-        </div>
-
-        {activeTab === 'pending' && (
-          <div className="w-full flex-1 flex flex-col">
-            {!selectedDoc ? (
-              <div className="space-y-3 overflow-y-auto">
-                {pendingDocs.map(doc => (
-                  <div key={doc.id} className="border border-gray-300 p-4 rounded bg-gray-50 flex justify-between items-center">
-                    <div>
-                      <div className="font-bold text-gray-800">{doc.customer_name}</div>
-                      <div className="text-sm text-gray-600">{doc.document_title}</div>
-                      <div className="text-xs text-blue-600 font-bold mt-1">₹{doc.bill_amount}</div>
-                    </div>
-                    <button 
-                      onClick={() => { setSelectedDoc(doc); setReceivedAmount(''); }}
-                      className="bg-blue-600 text-white px-4 py-2 text-xs font-bold uppercase rounded shadow-sm hover:bg-blue-700"
-                    >
-                      Collect
-                    </button>
-                  </div>
-                ))}
-                {pendingDocs.length === 0 && (
-                  <div className="text-center text-gray-500 py-10">No pending prints.</div>
-                )}
-              </div>
-            ) : (
-              <div className="w-full border border-black p-4 mb-4 bg-gray-50 relative">
-                <button onClick={() => setSelectedDoc(null)} className="absolute top-2 right-2 text-gray-500 text-sm font-bold">✕ Cancel</button>
-                <h3 className="font-bold text-lg mb-4 text-center">Collect Payment</h3>
-                <div className="text-sm text-center mb-6">For: <strong>{selectedDoc.customer_name}</strong> - {selectedDoc.document_title}</div>
-                
-                <input 
-                  type="number" placeholder="BILL AMOUNT (₹)" value={billAmount}
-                  onChange={(e) => { setBillAmount(e.target.value); if(paymentMethod==='UPI') setReceivedAmount(e.target.value); }}
-                  className="w-full border border-black py-4 text-center text-sm font-bold uppercase mb-4 outline-none focus:ring-1 focus:ring-black"
-                />
-
-                <div className="w-full flex border border-black mb-4">
-                  <button 
-                    onClick={() => { setPaymentMethod('UPI'); setReceivedAmount(billAmount); }}
-                    className={`flex-1 py-4 text-xs font-bold uppercase tracking-wide border-r border-black transition-colors ${paymentMethod === 'UPI' ? 'bg-[#b3dcff]' : 'bg-white hover:bg-gray-50'}`}
-                  >UPI</button>
-                  <button 
-                    onClick={() => setPaymentMethod('CASH')}
-                    className={`flex-1 py-4 text-xs font-bold uppercase tracking-wide transition-colors ${paymentMethod === 'CASH' ? 'bg-[#b3dcff]' : 'bg-white hover:bg-gray-50'}`}
-                  >CASH</button>
-                </div>
-
-                {paymentMethod === 'CASH' && (
-                  <input 
-                    type="number" placeholder="RECEIVED AMOUNT (₹)" value={receivedAmount}
-                    onChange={(e) => setReceivedAmount(e.target.value)}
-                    className="w-full border border-black py-4 text-center text-sm font-bold uppercase mb-4 outline-none focus:ring-1 focus:ring-black"
-                  />
-                )}
-
-                {paymentMethod === 'CASH' && billAmount && receivedAmount && Number(receivedAmount) >= Number(billAmount) && (
-                  <div className="text-center font-bold text-red-600 mb-4 text-lg">
-                    Change: ₹{Number(receivedAmount) - Number(billAmount)}
-                  </div>
-                )}
-
-                <button 
-                  onClick={handleCollectPayment} disabled={isPaying}
-                  className="w-full border border-black py-4 text-xs font-bold uppercase tracking-wide text-white bg-[#40a3ff] hover:bg-[#2b90f0]"
-                >
-                  {isPaying ? 'Processing...' : 'CONFIRM PAYMENT'}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'cash' && (
-          <div className="w-full flex-1 flex flex-col">
-            <h3 className="font-bold text-lg mb-4 text-center">Manual Cash Entry</h3>
-            <input 
-              type="number" placeholder="ENTER AMOUNT (₹)" value={cashAmount}
-              onChange={(e) => setCashAmount(e.target.value)}
-              className="w-full border border-black py-4 text-center text-sm font-bold uppercase mb-4 outline-none focus:ring-1 focus:ring-black"
-            />
-            <input 
-              type="text" placeholder="NOTES / REASON" value={cashNotes}
-              onChange={(e) => setCashNotes(e.target.value)}
-              className="w-full border border-black py-4 text-center text-sm font-bold uppercase mb-4 outline-none focus:ring-1 focus:ring-black"
-            />
-            <button 
-              onClick={handleAddCash} disabled={isSubmittingCash}
-              className="w-full border border-black py-4 text-xs font-bold uppercase tracking-wide text-black bg-[#68d371] hover:bg-[#52ba5b]"
+        {/* Counter Cash */}
+        <div className="bg-white border-b border-gray-200 px-4 sm:px-5 py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="text-[10px] font-bold text-gray-500 tracking-wider">{s.counterCash}</div>
+              <div className="text-xl sm:text-2xl font-black text-gray-900 mt-0.5 truncate">₹{stats.counterCash.toLocaleString('en-IN')}</div>
+            </div>
+            <button
+              onClick={() => setShowAddCash(true)}
+              className="bg-[#0d7c6b] hover:bg-[#0a6557] text-white text-[11px] font-bold px-3 sm:px-4 py-2 transition-colors shrink-0"
             >
-              {isSubmittingCash ? 'Processing...' : 'ADD TO COUNTER CASH'}
+              + {s.addCash}
             </button>
           </div>
-        )}
+          {showAddCash && (
+            <div className="flex flex-col sm:flex-row gap-2 mt-3 pt-3 border-t border-gray-100">
+              <input
+                type="number"
+                value={cashAmount}
+                onChange={(e) => setCashAmount(e.target.value)}
+                placeholder={s.amountPlaceholder}
+                className="flex-1 bg-gray-50 px-3 py-2 text-sm font-bold outline-none border border-gray-200 w-full sm:w-auto"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAddCash}
+                  disabled={isSubmittingCash}
+                  className="flex-1 sm:flex-none bg-[#0d7c6b] text-white px-4 py-2 text-sm font-bold"
+                >
+                  {s.add}
+                </button>
+                <button
+                  onClick={() => setShowAddCash(false)}
+                  className="flex-1 sm:flex-none bg-gray-100 text-gray-500 px-4 py-2 text-sm font-bold"
+                >
+                  {s.cancel}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Today's Earnings */}
+        <div className="bg-[#0d7c6b] border-b border-[#0a6557] px-4 sm:px-5 py-4">
+          <div className="text-[10px] font-bold text-white/70 tracking-wider">{s.todaysEarnings}</div>
+          <div className="text-2xl sm:text-3xl font-black text-white mt-0.5">₹{stats.todaysEarnings.toLocaleString('en-IN')}</div>
+        </div>
+
+        {/* UPI & Cash Split */}
+        <div className="flex border-b border-gray-200">
+          <div className="flex-1 bg-white px-4 sm:px-5 py-4 border-r border-gray-200 min-w-0">
+            <div className="text-[10px] font-bold text-gray-500 tracking-wider">{s.upi}</div>
+            <div className="text-lg sm:text-xl font-black text-gray-900 mt-0.5 truncate">₹{stats.upiTotal.toLocaleString('en-IN')}</div>
+          </div>
+          <div className="flex-1 bg-white px-4 sm:px-5 py-4 min-w-0">
+            <div className="text-[10px] font-bold text-gray-500 tracking-wider">{s.cash}</div>
+            <div className="text-lg sm:text-xl font-black text-gray-900 mt-0.5 truncate">₹{stats.cashTotal.toLocaleString('en-IN')}</div>
+          </div>
+        </div>
+
+        {/* Payment Entry */}
+        <div className="bg-white border-b border-gray-200 px-4 sm:px-5 py-4">
+          <div className="text-[10px] font-bold text-gray-500 tracking-widest mb-3">{s.paymentEntry}</div>
+          <div className="border border-gray-200 px-4 py-2 mb-3">
+            <div className="text-[10px] font-bold text-gray-400 tracking-wider">{s.amount}</div>
+            <input
+              type="number"
+              value={billAmount}
+              onChange={(e) => {
+                setBillAmount(e.target.value);
+                if (paymentMethod === 'CASH') setReceivedAmount(e.target.value);
+              }}
+              placeholder={s.enterAmount}
+              className="w-full text-xl sm:text-2xl font-black bg-transparent outline-none text-gray-800 placeholder-gray-300 mt-0.5"
+            />
+          </div>
+          <div className="flex gap-2 mb-3">
+            <button
+              onClick={() => setPaymentMethod('UPI')}
+              className={`flex-1 py-3 text-sm font-bold ${paymentMethod === 'UPI' ? 'bg-[#0d7c6b] text-white' : 'bg-gray-100 text-gray-500'}`}
+            >
+              {s.upi}
+            </button>
+            <button
+              onClick={() => {
+                setPaymentMethod('CASH');
+                setReceivedAmount(billAmount);
+              }}
+              className={`flex-1 py-3 text-sm font-bold ${paymentMethod === 'CASH' ? 'bg-[#0d7c6b] text-white' : 'bg-gray-100 text-gray-500'}`}
+            >
+              {s.cash}
+            </button>
+          </div>
+          {paymentMethod === 'CASH' && (
+            <div className="mb-3">
+              <div className="text-[10px] font-bold text-gray-500 tracking-widest mb-1">{s.receivedAmount}</div>
+              <input
+                type="number"
+                value={receivedAmount}
+                onChange={(e) => setReceivedAmount(e.target.value)}
+                placeholder={s.enterReceived}
+                className="w-full bg-white border border-gray-300 px-4 py-3 text-sm font-bold outline-none text-gray-800 placeholder-gray-300"
+              />
+              {billAmount && receivedAmount && Number(receivedAmount) >= Number(billAmount) && (
+                <div className="mt-1 text-xs font-bold text-red-600">
+                  {s.changeDue} ₹{Number(receivedAmount) - Number(billAmount)}
+                </div>
+              )}
+            </div>
+          )}
+          <button
+            onClick={handleCollectPayment}
+            disabled={isPaying || !billAmount}
+            className="w-full bg-[#1e293b] text-white hover:bg-gray-800 py-3 text-sm font-bold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {s.addPayment}
+          </button>
+        </div>
+
+        {/* Recent Transactions */}
+        <div className="bg-white px-4 sm:px-5 py-4">
+          <div className="font-bold text-gray-900 mb-3">{s.recentTransactions}</div>
+          {stats.recentTransactions.length === 0 ? (
+            <div className="text-center text-gray-400 text-sm py-4 font-medium">{s.noTransactions}</div>
+          ) : (
+            stats.recentTransactions.map((tx: any) => (
+              <div key={tx.id} className="flex justify-between items-center py-2.5 border-b border-gray-100 last:border-b-0 gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className={`text-[10px] font-bold px-2 py-0.5 tracking-wider shrink-0 ${tx.payment_method === 'UPI' ? 'bg-gray-200 text-gray-700' : 'bg-gray-800 text-white'}`}>
+                    {tx.payment_method === 'UPI' ? s.upi : s.cash}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs text-gray-400 font-medium truncate">
+                      {new Date(tx.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} {tx.entry_type === 'MANUAL_CASH_ADDITION' ? s.manual : ''}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-sm sm:text-base font-black text-gray-900 shrink-0">
+                  ₹{tx.amount_collected.toLocaleString('en-IN')}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
       </div>
     </div>

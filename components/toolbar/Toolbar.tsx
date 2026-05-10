@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { FileText, ZoomIn, ZoomOut, Printer, Edit3, FormInput } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
-import { createDocument } from '@/app/actions/app-actions';
 
 interface ToolbarProps {
   printRef: React.RefObject<HTMLDivElement | null>;
@@ -10,9 +9,6 @@ interface ToolbarProps {
 
 export const Toolbar = ({ printRef }: ToolbarProps) => {
   const { activeTemplate, setActiveTemplate, editMode, setEditMode, zoom, setZoom } = useDocumentStore();
-  const [showPopup, setShowPopup] = useState(false);
-  const [customerName, setCustomerName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -20,30 +16,7 @@ export const Toolbar = ({ printRef }: ToolbarProps) => {
   });
 
   const onExportClick = () => {
-    setShowPopup(true);
-  };
-
-  const confirmAndPrint = async () => {
-    if (!customerName.trim()) return alert('Please enter Customer Name');
-    
-    setIsSubmitting(true);
-    const formData = new FormData();
-    formData.append('customerName', customerName);
-    formData.append('documentTitle', activeTemplate === 'rent_agreement' ? 'Rent Agreement' : 'Affidavit');
-    formData.append('templateType', activeTemplate);
-
-    const res = await createDocument(formData);
-    setIsSubmitting(false);
-
-    if (res.success) {
-      setShowPopup(false);
-      setCustomerName('');
-      
-      // Trigger actual print
-      handlePrint();
-    } else {
-      alert(res.error || 'Failed to save record to manager dashboard');
-    }
+    handlePrint();
   };
 
   return (
@@ -119,46 +92,6 @@ export const Toolbar = ({ printRef }: ToolbarProps) => {
           </button>
         </div>
       </header>
-
-      {/* Confirmation Popup */}
-      {showPopup && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full font-sans">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">Confirm Document Print</h2>
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-                <input 
-                  type="text" 
-                  autoFocus
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Enter customer name"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-              <div className="text-sm text-gray-700">
-                <p><span className="font-semibold">Template:</span> {activeTemplate === 'rent_agreement' ? 'Rent Agreement' : 'Affidavit'}</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setShowPopup(false)}
-                className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={confirmAndPrint}
-                disabled={isSubmitting || !customerName.trim()}
-                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition disabled:opacity-50"
-              >
-                {isSubmitting ? 'Saving...' : 'Confirm & Print'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 };
