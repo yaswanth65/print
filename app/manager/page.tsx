@@ -53,7 +53,7 @@ const t: Record<Lang, Record<string, string>> = {
 };
 
 export default function ManagerDashboard() {
-  const [lang, setLang] = useState<Lang>('en');
+  const [lang, setLang] = useState<Lang>('te');
 
   const [stats, setStats] = useState<any>({
     counterCash: 0,
