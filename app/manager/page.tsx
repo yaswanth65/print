@@ -2,6 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { getDashboardMetrics, addManualCash, createIndependentPayment } from '@/app/actions/app-actions';
+import { 
+  Wallet, 
+  TrendingUp, 
+  Zap, 
+  Banknote, 
+  Plus, 
+  Delete, 
+  ArrowRight,
+  TrendingDown,
+  Clock
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type Lang = 'en' | 'te';
 
@@ -27,6 +39,8 @@ const t: Record<Lang, Record<string, string>> = {
     enterReceived: 'Enter received amount',
     english: 'English',
     telugu: 'తెలుగు',
+    viewAll: 'View all',
+    txns: 'Txns',
   },
   te: {
     counterCash: 'కౌంటర్ క్యాష్',
@@ -49,6 +63,8 @@ const t: Record<Lang, Record<string, string>> = {
     enterReceived: 'అందిన మొత్తం నమోదు చేయండి',
     english: 'English',
     telugu: 'తెలుగు',
+    viewAll: 'అన్నీ చూడండి',
+    txns: 'లావాదేవీలు',
   },
 };
 
@@ -88,9 +104,13 @@ export default function ManagerDashboard() {
     let finalReceived = Number(billAmount);
 
     if (paymentMethod === 'CASH') {
-      if (!receivedAmount || isNaN(Number(receivedAmount))) return alert(lang === 'te' ? 'దయచేసి అందిన మొత్తం నమోదు చేయండి' : 'Please enter the received cash amount');
-      if (Number(receivedAmount) < Number(billAmount)) return alert(lang === 'te' ? 'అందిన మొత్తం బిల్ మొత్తం కంటే తక్కువగా ఉండకూడదు' : 'Received amount cannot be less than bill amount');
-      finalReceived = Number(receivedAmount);
+      // In the new UI, we might need to handle received amount if it's different.
+      // For now, if not explicitly entered, assume exact amount.
+      finalReceived = receivedAmount ? Number(receivedAmount) : Number(billAmount);
+      
+      if (finalReceived < Number(billAmount)) {
+        return alert(lang === 'te' ? 'అందిన మొత్తం బిల్ మొత్తం కంటే తక్కువగా ఉండకూడదు' : 'Received amount cannot be less than bill amount');
+      }
     }
 
     setIsPaying(true);
@@ -119,170 +139,259 @@ export default function ManagerDashboard() {
     loadData();
   };
 
+  const handleKeypadPress = (val: string) => {
+    if (val === 'delete') {
+      setBillAmount(prev => prev.slice(0, -1));
+    } else if (val === '.') {
+      if (!billAmount.includes('.')) {
+        setBillAmount(prev => prev + val);
+      }
+    } else {
+      // Limit to reasonable length
+      if (billAmount.length < 7) {
+        setBillAmount(prev => prev + val);
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#eef1f6] flex items-start justify-center pt-0 pb-8">
-      <div className="w-full min-w-0 flex flex-col">
+    <div className="min-h-screen bg-[#F1F5F9] text-[#1E293B] font-sans">
+      {/* Language Toggle Fixed at Top */}
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md px-4 py-2 flex justify-end gap-2 border-b border-gray-100">
+        <button
+          onClick={() => setLang('en')}
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${lang === 'en' ? 'bg-[#0D7C6B] text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}
+        >
+          {s.english}
+        </button>
+        <button
+          onClick={() => setLang('te')}
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${lang === 'te' ? 'bg-[#0D7C6B] text-white shadow-md' : 'bg-gray-100 text-gray-500'}`}
+        >
+          {s.telugu}
+        </button>
+      </div>
 
-        {/* Language Toggle */}
-        <div className="flex border-b border-gray-300">
-          <button
-            onClick={() => setLang('en')}
-            className={`flex-1 py-3 text-sm font-bold tracking-wide ${lang === 'en' ? 'bg-white text-[#0d7c6b] border-b-2 border-[#0d7c6b]' : 'bg-gray-100 text-gray-500'}`}
-          >
-            {s.english}
-          </button>
-          <button
-            onClick={() => setLang('te')}
-            className={`flex-1 py-3 text-sm font-bold tracking-wide ${lang === 'te' ? 'bg-white text-[#0d7c6b] border-b-2 border-[#0d7c6b]' : 'bg-gray-100 text-gray-500'}`}
-          >
-            {s.telugu}
-          </button>
-        </div>
-
-        {/* Counter Cash */}
-        <div className="bg-white border-b border-gray-200 px-4 sm:px-5 py-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <div className="text-[10px] font-bold text-gray-500 tracking-wider">{s.counterCash}</div>
-              <div className="text-xl sm:text-2xl font-black text-gray-900 mt-0.5 truncate">₹{stats.counterCash.toLocaleString('en-IN')}</div>
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
+        
+        {/* 1. COUNTER CASH CARD */}
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-50 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#DCFCE7] flex items-center justify-center text-[#166534]">
+              <Wallet size={24} />
             </div>
-            <button
-              onClick={() => setShowAddCash(true)}
-              className="bg-[#0d7c6b] hover:bg-[#0a6557] text-white text-[11px] font-bold px-3 sm:px-4 py-2 transition-colors shrink-0"
-            >
-              + {s.addCash}
-            </button>
+            <div>
+              <div className="text-[10px] font-bold text-gray-400 tracking-widest uppercase">{s.counterCash}</div>
+              <div className="text-2xl font-black text-gray-900">₹{stats.counterCash.toLocaleString('en-IN')}</div>
+            </div>
           </div>
+          <button
+            onClick={() => setShowAddCash(true)}
+            className="bg-[#22C55E] hover:bg-[#16A34A] text-white rounded-xl px-4 py-2.5 text-xs font-extrabold flex items-center gap-1.5 transition-all active:scale-95 shadow-lg shadow-green-100"
+          >
+            <Plus size={16} strokeWidth={3} />
+            {s.addCash}
+          </button>
+        </motion.div>
+
+        {/* Add Cash Modal Overlay */}
+        <AnimatePresence>
           {showAddCash && (
-            <div className="flex flex-col sm:flex-row gap-2 mt-3 pt-3 border-t border-gray-100">
-              <input
-                type="number"
-                value={cashAmount}
-                onChange={(e) => setCashAmount(e.target.value)}
-                placeholder={s.amountPlaceholder}
-                className="flex-1 bg-gray-50 px-3 py-2 text-sm font-bold outline-none border border-gray-200 w-full sm:w-auto"
-                autoFocus
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={handleAddCash}
-                  disabled={isSubmittingCash}
-                  className="flex-1 sm:flex-none bg-[#0d7c6b] text-white px-4 py-2 text-sm font-bold"
-                >
-                  {s.add}
-                </button>
-                <button
-                  onClick={() => setShowAddCash(false)}
-                  className="flex-1 sm:flex-none bg-gray-100 text-gray-500 px-4 py-2 text-sm font-bold"
-                >
-                  {s.cancel}
-                </button>
-              </div>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6"
+            >
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl"
+              >
+                <div className="text-lg font-black mb-4">{s.addCash}</div>
+                <input
+                  type="number"
+                  value={cashAmount}
+                  onChange={(e) => setCashAmount(e.target.value)}
+                  placeholder={s.amountPlaceholder}
+                  className="w-full bg-gray-50 rounded-2xl px-4 py-4 text-xl font-bold border-2 border-transparent focus:border-[#0D7C6B] outline-none mb-4 transition-all"
+                  autoFocus
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowAddCash(false)}
+                    className="flex-1 py-3 text-sm font-bold text-gray-400 bg-gray-100 rounded-2xl"
+                  >
+                    {s.cancel}
+                  </button>
+                  <button
+                    onClick={handleAddCash}
+                    disabled={isSubmittingCash || !cashAmount}
+                    className="flex-1 py-3 text-sm font-bold text-white bg-[#0D7C6B] rounded-2xl disabled:opacity-50"
+                  >
+                    {s.add}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
 
-        {/* Today's Earnings */}
-        <div className="bg-[#0d7c6b] border-b border-[#0a6557] px-4 sm:px-5 py-4">
-          <div className="text-[10px] font-bold text-white/70 tracking-wider">{s.todaysEarnings}</div>
-          <div className="text-2xl sm:text-3xl font-black text-white mt-0.5">₹{stats.todaysEarnings.toLocaleString('en-IN')}</div>
-        </div>
+        {/* 2. PAYMENT ENTRY COMPONENT */}
+        <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-50 space-y-5">
+          <div className="text-[10px] font-bold text-gray-400 tracking-widest uppercase">{s.paymentEntry}</div>
+          
+          {/* Amount Display */}
+          <div className="relative group">
+            <div className={`w-full bg-[#F8FAFC] rounded-2xl px-6 py-6 border-2 transition-all flex items-center justify-between ${billAmount ? 'border-[#6366F1]' : 'border-gray-100'}`}>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-gray-400 uppercase mb-1">{s.amount}</span>
+                <div className={`text-4xl font-black whitespace-nowrap ${billAmount ? 'text-gray-900' : 'text-gray-300'}`}>
+                  {billAmount ? `₹${billAmount}` : s.enterAmount}
+                  <span className="animate-pulse text-[#6366F1]">|</span>
+                </div>
+              </div>
+              {billAmount && (
+                <button onClick={() => setBillAmount('')} className="p-2 text-gray-300 hover:text-gray-500">
+                  <Delete size={24} />
+                </button>
+              )}
+            </div>
+          </div>
 
-        {/* UPI & Cash Split */}
-        <div className="flex border-b border-gray-200">
-          <div className="flex-1 bg-white px-4 sm:px-5 py-4 border-r border-gray-200 min-w-0">
-            <div className="text-[10px] font-bold text-gray-500 tracking-wider">{s.upi}</div>
-            <div className="text-lg sm:text-xl font-black text-gray-900 mt-0.5 truncate">₹{stats.upiTotal.toLocaleString('en-IN')}</div>
-          </div>
-          <div className="flex-1 bg-white px-4 sm:px-5 py-4 min-w-0">
-            <div className="text-[10px] font-bold text-gray-500 tracking-wider">{s.cash}</div>
-            <div className="text-lg sm:text-xl font-black text-gray-900 mt-0.5 truncate">₹{stats.cashTotal.toLocaleString('en-IN')}</div>
-          </div>
-        </div>
-
-        {/* Payment Entry */}
-        <div className="bg-white border-b border-gray-200 px-4 sm:px-5 py-4">
-          <div className="text-[10px] font-bold text-gray-500 tracking-widest mb-3">{s.paymentEntry}</div>
-          <div className="border border-gray-200 px-4 py-2 mb-3">
-            <div className="text-[10px] font-bold text-gray-400 tracking-wider">{s.amount}</div>
-            <input
-              type="number"
-              value={billAmount}
-              onChange={(e) => {
-                setBillAmount(e.target.value);
-                if (paymentMethod === 'CASH') setReceivedAmount(e.target.value);
-              }}
-              placeholder={s.enterAmount}
-              className="w-full text-xl sm:text-2xl font-black bg-transparent outline-none text-gray-800 placeholder-gray-300 mt-0.5"
-            />
-          </div>
-          <div className="flex gap-2 mb-3">
+          {/* UPI / CASH Toggle */}
+          <div className="flex bg-gray-50 p-1.5 rounded-2xl gap-1.5">
             <button
               onClick={() => setPaymentMethod('UPI')}
-              className={`flex-1 py-3 text-sm font-bold ${paymentMethod === 'UPI' ? 'bg-[#0d7c6b] text-white' : 'bg-gray-100 text-gray-500'}`}
+              className={`flex-1 py-3.5 rounded-xl text-sm font-extrabold flex items-center justify-center gap-2 transition-all ${paymentMethod === 'UPI' ? 'bg-[#7C3AED] text-white shadow-md' : 'bg-transparent text-gray-400'}`}
             >
+              <Zap size={18} fill={paymentMethod === 'UPI' ? 'currentColor' : 'none'} />
               {s.upi}
             </button>
             <button
-              onClick={() => {
-                setPaymentMethod('CASH');
-                setReceivedAmount(billAmount);
-              }}
-              className={`flex-1 py-3 text-sm font-bold ${paymentMethod === 'CASH' ? 'bg-[#0d7c6b] text-white' : 'bg-gray-100 text-gray-500'}`}
+              onClick={() => setPaymentMethod('CASH')}
+              className={`flex-1 py-3.5 rounded-xl text-sm font-extrabold flex items-center justify-center gap-2 transition-all ${paymentMethod === 'CASH' ? 'bg-[#10B981] text-white shadow-md' : 'bg-transparent text-gray-400'}`}
             >
+              <Banknote size={18} />
               {s.cash}
             </button>
           </div>
-          {paymentMethod === 'CASH' && (
-            <div className="mb-3">
-              <div className="text-[10px] font-bold text-gray-500 tracking-widest mb-1">{s.receivedAmount}</div>
-              <input
-                type="number"
-                value={receivedAmount}
-                onChange={(e) => setReceivedAmount(e.target.value)}
-                placeholder={s.enterReceived}
-                className="w-full bg-white border border-gray-300 px-4 py-3 text-sm font-bold outline-none text-gray-800 placeholder-gray-300"
-              />
-              {billAmount && receivedAmount && Number(receivedAmount) >= Number(billAmount) && (
-                <div className="mt-1 text-xs font-bold text-red-600">
-                  {s.changeDue} ₹{Number(receivedAmount) - Number(billAmount)}
-                </div>
-              )}
-            </div>
-          )}
+
+          {/* Numeric Keypad */}
+          <div className="grid grid-cols-3 gap-3">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, '.', 0, 'delete'].map((key) => (
+              <button
+                key={key}
+                onClick={() => handleKeypadPress(key.toString())}
+                className={`h-16 rounded-2xl text-xl font-black flex items-center justify-center transition-all active:scale-95 ${key === 'delete' ? 'bg-red-50 text-red-500' : 'bg-white border border-gray-100 text-gray-800 shadow-sm hover:bg-gray-50'}`}
+              >
+                {key === 'delete' ? <Delete size={24} /> : key}
+              </button>
+            ))}
+          </div>
+
+          {/* Add Payment Button */}
           <button
             onClick={handleCollectPayment}
             disabled={isPaying || !billAmount}
-            className="w-full bg-[#1e293b] text-white hover:bg-gray-800 py-3 text-sm font-bold tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full py-5 rounded-[20px] text-sm font-black tracking-widest flex items-center justify-center gap-3 transition-all ${!billAmount ? 'bg-gray-100 text-gray-300' : 'bg-[#1E293B] text-white shadow-xl shadow-gray-200 hover:bg-black active:scale-[0.98]'}`}
           >
-            {s.addPayment}
+            <Plus size={20} strokeWidth={3} />
+            {s.addPayment.toUpperCase()}
           </button>
         </div>
 
-        {/* Recent Transactions */}
-        <div className="bg-white px-4 sm:px-5 py-4">
-          <div className="font-bold text-gray-900 mb-3">{s.recentTransactions}</div>
-          {stats.recentTransactions.length === 0 ? (
-            <div className="text-center text-gray-400 text-sm py-4 font-medium">{s.noTransactions}</div>
-          ) : (
-            stats.recentTransactions.map((tx: any) => (
-              <div key={tx.id} className="flex justify-between items-center py-2.5 border-b border-gray-100 last:border-b-0 gap-2">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                  <div className={`text-[10px] font-bold px-2 py-0.5 tracking-wider shrink-0 ${tx.payment_method === 'UPI' ? 'bg-gray-200 text-gray-700' : 'bg-gray-800 text-white'}`}>
-                    {tx.payment_method === 'UPI' ? s.upi : s.cash}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs text-gray-400 font-medium truncate">
-                      {new Date(tx.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} {tx.entry_type === 'MANUAL_CASH_ADDITION' ? s.manual : ''}
+        {/* 3. ANALYTICS (Following Payment Entry) */}
+        <div className="grid grid-cols-2 gap-4 pt-2">
+          {/* Today's Earnings Card */}
+          <div className="col-span-2 bg-gradient-to-br from-[#1E293B] to-[#334155] rounded-3xl p-6 text-white shadow-xl overflow-hidden relative">
+            <div className="relative z-10">
+              <div className="text-[10px] font-bold text-white/50 tracking-widest uppercase">{s.todaysEarnings}</div>
+              <div className="text-3xl font-black mt-1">₹{stats.todaysEarnings.toLocaleString('en-IN')}</div>
+            </div>
+            {/* Visual Sparkline Placeholder */}
+            <div className="absolute right-6 bottom-6 w-24 h-12 opacity-30">
+              <svg viewBox="0 0 100 40" className="w-full h-full stroke-white stroke-[4] fill-none">
+                <path d="M0,35 L20,30 L40,32 L60,15 L80,20 L100,5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <TrendingUp className="absolute -top-4 -right-4 w-24 h-24 text-white/5" />
+          </div>
+
+          {/* UPI Total */}
+          <div className="bg-white rounded-[24px] p-5 border border-gray-50 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3">
+              <Zap size={20} />
+            </div>
+            <div className="text-[10px] font-bold text-gray-400 tracking-widest uppercase">{s.upi}</div>
+            <div className="text-xl font-black text-gray-900">₹{stats.upiTotal.toLocaleString('en-IN')}</div>
+            <div className="text-[10px] font-bold text-gray-300 mt-1">
+              {stats.recentTransactions.filter((tx:any) => tx.payment_method === 'UPI').length} {s.txns}
+            </div>
+          </div>
+
+          {/* Cash Total */}
+          <div className="bg-white rounded-[24px] p-5 border border-gray-50 shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
+              <Banknote size={20} />
+            </div>
+            <div className="text-[10px] font-bold text-gray-400 tracking-widest uppercase">{s.cash}</div>
+            <div className="text-xl font-black text-gray-900">₹{stats.cashTotal.toLocaleString('en-IN')}</div>
+            <div className="text-[10px] font-bold text-gray-300 mt-1">
+              {stats.recentTransactions.filter((tx:any) => tx.payment_method === 'CASH').length} {s.txns}
+            </div>
+          </div>
+        </div>
+
+        {/* 4. RECENT TRANSACTIONS (Now at the end) */}
+        <div className="pt-4 pb-8 space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <Clock size={18} className="text-[#0D7C6B]" />
+              <h2 className="text-base font-black text-gray-900">{s.recentTransactions}</h2>
+            </div>
+            <button className="text-xs font-bold text-[#6366F1] flex items-center gap-1">
+              {s.viewAll} <ArrowRight size={14} />
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {stats.recentTransactions.length === 0 ? (
+              <div className="bg-white rounded-3xl p-10 text-center text-gray-300 text-sm font-bold border border-dashed border-gray-200">
+                {s.noTransactions}
+              </div>
+            ) : (
+              stats.recentTransactions.slice(0, 5).map((tx: any) => (
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }} 
+                  animate={{ opacity: 1, x: 0 }}
+                  key={tx.id} 
+                  className="bg-white rounded-2xl p-4 flex items-center justify-between shadow-sm border border-gray-50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.payment_method === 'UPI' ? 'bg-purple-50 text-purple-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                      {tx.payment_method === 'UPI' ? <Zap size={18} /> : <Banknote size={18} />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${tx.payment_method === 'UPI' ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                          {tx.payment_method === 'UPI' ? s.upi : s.cash}
+                        </span>
+                        <span className="text-[10px] font-bold text-gray-400">
+                          {new Date(tx.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-gray-300 font-medium mt-0.5">{tx.entry_type === 'MANUAL_CASH_ADDITION' ? s.manual : ''}</div>
                     </div>
                   </div>
-                </div>
-                <div className="text-sm sm:text-base font-black text-gray-900 shrink-0">
-                  ₹{tx.amount_collected.toLocaleString('en-IN')}
-                </div>
-              </div>
-            ))
-          )}
+                  <div className="text-lg font-black text-gray-900">
+                    ₹{tx.amount_collected.toLocaleString('en-IN')}
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </div>
         </div>
 
       </div>

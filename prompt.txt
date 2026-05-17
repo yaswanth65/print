@@ -1,0 +1,113 @@
+Redesign the Cash Counter dashboard to match the following layout priorities.
+
+==================================================
+LAYOUT PRIORITY (TOP 100vh ONLY)
+==================================================
+
+In the first screen (within the initial 100vh viewport), show ONLY these two main sections:
+
+1. Counter Cash
+2. Payment Entry
+
+All other sections should appear below the fold.
+
+==================================================
+SECTION ORDER
+==================================================
+
+1. Counter Cash Card
+2. Payment Entry Component
+3. Recent Transactions
+4. Remaining dashboard components (Today's Earnings, UPI summary, Cash summary, etc.)
+
+==================================================
+1. COUNTER CASH CARD
+==================================================
+
+Place the "Counter Cash" card at the very top.
+
+Contents:
+- Label: COUNTER CASH
+- Large amount value (e.g., ₹3,220)
+- Green "+ ADD CASH" button aligned to the right
+
+Design:
+- White card
+- Rounded corners
+- Soft shadow
+- Compact and professional
+
+==================================================
+2. PAYMENT ENTRY COMPONENT
+==================================================
+
+Immediately below Counter Cash, place the Payment Entry component.
+
+Structure:
+- Section title: PAYMENT ENTRY
+- Amount input field with large placeholder text "Enter Amount"
+- UPI and CASH toggle buttons
+- Numeric keypad (1–9, ., 0, backspace/delete)
+- Full-width "ADD PAYMENT" button
+
+Requirements:
+- This entire component should be fully visible within the first viewport along with Counter Cash.
+- Make spacing compact so both sections fit comfortably on mobile screens.
+- Payment Entry should be the main focus of the page.
+
+==================================================
+3. RECENT TRANSACTIONS
+==================================================
+
+Place "Recent Transactions" directly below the Payment Entry section.
+
+Header:
+- Title: Recent Transactions
+- "View All →" link aligned to the right
+
+Display transaction cards beneath it.
+
+==================================================
+4. REMAINING DASHBOARD COMPONENTS
+==================================================
+
+Move the following sections BELOW Recent Transactions:
+- Today's Earnings
+- UPI Summary
+- Cash Summary
+- Any charts or analytics cards
+
+These are secondary information and should not appear in the first 100vh.
+
+==================================================
+MOBILE UX GOAL
+==================================================
+
+The cashier should immediately see:
+1. Current counter cash balance
+2. Payment entry keypad
+
+without scrolling.
+
+Analytics and summaries are useful, but not critical for quick transaction entry, so they should be pushed lower.
+
+==================================================
+VISUAL STYLE
+==================================================
+
+- Clean mobile-first design
+- White cards with subtle shadows
+- Rounded corners (16–20px)
+- Compact vertical spacing
+- Professional fintech appearance
+- Preserve existing color scheme and button styles
+
+==================================================
+FINAL OBJECTIVE
+==================================================
+
+When the page loads, the first visible screen should contain only:
+- Counter Cash
+- Payment Entry
+
+Recent Transactions should start immediately below them, and all analytics cards should be moved further down.
