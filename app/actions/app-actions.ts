@@ -2,7 +2,7 @@
 
 import { db } from '@/db';
 import { documents, transactions, counter_cash_entries } from '@/db/schema';
-import { eq, desc, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
 // Operator Actions (Removed)
@@ -63,29 +63,50 @@ export async function addManualCash(amount: number, notes: string) {
 
 
 
+// ─── IST Helpers ──────────────────────────────────────────────
+const IST_OFFSET = 5.5 * 60 * 60 * 1000;
+
+function istDateStrToUTCRange(dateStr: string) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const startUTC = new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0)).getTime() - IST_OFFSET;
+  const endUTC = new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999)).getTime() - IST_OFFSET;
+  return { start: new Date(startUTC), end: new Date(endUTC) };
+}
+
+function getTodayISTRange() {
+  const now = new Date();
+  const istMS = now.getTime() + IST_OFFSET;
+  const istDate = new Date(istMS);
+  const y = istDate.getUTCFullYear();
+  const m = String(istDate.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(istDate.getUTCDate()).padStart(2, '0');
+  return istDateStrToUTCRange(`${y}-${m}-${d}`);
+}
+
 // Dashboard Metrics
 export async function getDashboardMetrics(startDateStr?: string, endDateStr?: string) {
-  const start = startDateStr ? new Date(startDateStr) : new Date();
-  start.setHours(0, 0, 0, 0);
+  let start: Date, end: Date;
 
-  const end = endDateStr ? new Date(endDateStr) : new Date();
-  end.setHours(23, 59, 59, 999);
+  if (startDateStr && endDateStr) {
+    const sRange = istDateStrToUTCRange(startDateStr);
+    const eRange = istDateStrToUTCRange(endDateStr);
+    start = sRange.start;
+    end = eRange.end;
+  } else {
+    const range = getTodayISTRange();
+    start = range.start;
+    end = range.end;
+  }
 
-  const txs = await db.select().from(transactions).orderBy(desc(transactions.created_at));
-
-  const filteredTxs = txs.filter(t => {
-    const d = new Date(t.created_at!);
-    return d >= start && d <= end;
-  });
+  const txs = await db.select().from(transactions)
+    .where(and(gte(transactions.created_at, start), lte(transactions.created_at, end)))
+    .orderBy(desc(transactions.created_at));
   
-  const earnings = filteredTxs.reduce((sum, t) => sum + (t.amount_collected || 0), 0);
-  const cashTotal = filteredTxs.filter(t => t.payment_method === 'CASH').reduce((sum, t) => sum + (t.amount_collected || 0), 0);
-  const upiTotal = filteredTxs.filter(t => t.payment_method === 'UPI').reduce((sum, t) => sum + (t.amount_collected || 0), 0);
-
-  const allCashTxs = txs.filter(t => t.payment_method === 'CASH').reduce((sum, t) => sum + (t.amount_collected || 0), 0);
-  const allManualAdditions = txs.filter(t => t.entry_type === 'MANUAL_CASH_ADDITION').reduce((sum, t) => sum + (t.amount_collected || 0), 0);
-  
-  const counterCash = allCashTxs + allManualAdditions;
+  const earnings = txs.reduce((sum, t) => sum + (t.amount_collected || 0), 0);
+  const cashTotal = txs.filter(t => t.payment_method === 'CASH').reduce((sum, t) => sum + (t.amount_collected || 0), 0);
+  const upiTotal = txs.filter(t => t.payment_method === 'UPI').reduce((sum, t) => sum + (t.amount_collected || 0), 0);
+  const manualCash = txs.filter(t => t.entry_type === 'MANUAL_CASH_ADDITION').reduce((sum, t) => sum + (t.amount_collected || 0), 0);
+  const counterCash = cashTotal + manualCash;
 
   return {
     todaysEarnings: earnings,
@@ -94,6 +115,6 @@ export async function getDashboardMetrics(startDateStr?: string, endDateStr?: st
     counterCash,
     pendingPaymentsCount: 0,
     totalDocumentsPrinted: 0,
-    recentTransactions: filteredTxs.slice(0, 50),
+    recentTransactions: txs.slice(0, 50),
   };
 }

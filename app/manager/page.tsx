@@ -13,6 +13,7 @@ import {
   TrendingDown,
   Clock
 } from 'lucide-react';
+import { formatIST } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Lang = 'en' | 'te';
@@ -379,7 +380,7 @@ export default function ManagerDashboard() {
                           {tx.payment_method === 'UPI' ? s.upi : s.cash}
                         </span>
                         <span className="text-[10px] font-bold text-gray-400">
-                          {new Date(tx.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          {formatIST(tx.created_at)}
                         </span>
                       </div>
                       <div className="text-[10px] text-gray-300 font-medium mt-0.5">{tx.entry_type === 'MANUAL_CASH_ADDITION' ? s.manual : ''}</div>

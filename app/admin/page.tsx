@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { formatIST } from '@/lib/utils';
 import { getDashboardMetrics } from '@/app/actions/app-actions';
 import { getAttendance, saveAttendance, getUsers, addUser, updateUser, deleteUser, getUserAttendanceHistory } from '@/app/actions/admin-actions';
 
@@ -140,7 +141,7 @@ function CashTab({ metrics, startDate, endDate, setStartDate, setEndDate, s, lan
                     <td className="py-3 pr-3 text-xs sm:text-sm font-medium text-gray-800 truncate max-w-[120px] sm:max-w-none">{tx.document_title || '-'}</td>
                     <td className="py-3 pr-3"><span className="text-[10px] font-bold text-gray-500">{tx.payment_method || '-'}</span></td>
                     <td className="py-3 pr-3 text-xs text-gray-400 whitespace-nowrap">
-                      {new Date(tx.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      {formatIST(tx.created_at)}
                     </td>
                     <td className="py-3 text-right text-xs sm:text-sm font-black text-gray-900 whitespace-nowrap">₹{tx.amount_collected.toLocaleString('en-IN')}</td>
                   </tr>
