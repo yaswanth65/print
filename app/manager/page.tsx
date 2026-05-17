@@ -247,7 +247,7 @@ export default function ManagerDashboard() {
             <div className={`w-full bg-[#F8FAFC] rounded-2xl px-6 py-6 border-2 transition-all flex items-center justify-between ${billAmount ? 'border-[#6366F1]' : 'border-gray-100'}`}>
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold text-gray-400 uppercase mb-1">{s.amount}</span>
-                <div className={`text-4xl font-black whitespace-nowrap ${billAmount ? 'text-gray-900' : 'text-gray-300'}`}>
+                <div className={`font-black whitespace-nowrap overflow-hidden text-ellipsis ${billAmount ? 'text-4xl text-gray-900' : 'text-[1.375rem] text-gray-300'}`}>
                   {billAmount ? `₹${billAmount}` : s.enterAmount}
                   <span className="animate-pulse text-[#6366F1]">|</span>
                 </div>
