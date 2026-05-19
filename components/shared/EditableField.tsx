@@ -1,5 +1,5 @@
 import { useDocumentStore, TemplateType } from '@/store/useDocumentStore';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface EditableFieldProps {
   template: TemplateType;
@@ -14,61 +14,73 @@ export const EditableField: React.FC<EditableFieldProps> = ({
   fieldPath, 
   value, 
   className = '', 
-  placeholder = '...' 
+  placeholder = 'Click to edit...' 
 }) => {
   const { editMode, updateField } = useDocumentStore();
   const isDirectMode = editMode === 'direct';
   const spanRef = useRef<HTMLSpanElement>(null);
-  const [localValue, setLocalValue] = useState(value);
+  const isEditing = useRef(false);
 
-  // Sync with global store if changed externally (e.g. form mode)
+  // Sync innerText from store when NOT in direct edit mode
+  // In direct mode, the user controls the DOM via contentEditable
   useEffect(() => {
-    if (!isDirectMode) {
-      setLocalValue(value);
-      if (spanRef.current && spanRef.current.innerText !== value) {
-        spanRef.current.innerText = value || placeholder;
+    if (spanRef.current && !isEditing.current) {
+      const t = value || '';
+      if (spanRef.current.innerText !== t) {
+        spanRef.current.innerText = t;
       }
     }
-  }, [value, isDirectMode, placeholder]);
+  }, [value]);
 
-  const handleInput = (e: React.FormEvent<HTMLSpanElement>) => {
-    setLocalValue(e.currentTarget.innerText);
+  const handleInput = () => {
+    isEditing.current = true;
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLSpanElement>) => {
+    isEditing.current = false;
     const text = e.currentTarget.innerText;
-    updateField(template, fieldPath, text.trim());
+    const trimmed = text.trim();
+    if (trimmed !== value) {
+      updateField(template, fieldPath, trimmed);
+    }
+    e.currentTarget.innerText = trimmed;
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLSpanElement>) => {
     e.preventDefault();
     const text = e.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(document.createTextNode(text));
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
-    // Prevent creating new divs/paragraphs inside the span on enter
     if (e.key === 'Enter') {
       e.preventDefault();
     }
   };
 
+  if (!isDirectMode) {
+    return <span className={className}>{value || ''}</span>;
+  }
+
   return (
     <span
       ref={spanRef}
-      contentEditable={isDirectMode}
+      contentEditable
       suppressContentEditableWarning
+      data-placeholder={placeholder}
       onInput={handleInput}
       onBlur={handleBlur}
       onPaste={handlePaste}
       onKeyDown={handleKeyDown}
-      className={`relative rounded-sm transition-colors ${
-        isDirectMode 
-          ? 'hover:bg-blue-50 focus:bg-blue-100 focus:outline-none focus:ring-1 focus:ring-blue-400 cursor-text px-1 -mx-1' 
-          : ''
-      } ${className}`}
+      className={`editable-field relative rounded-sm transition-colors hover:bg-blue-50 focus:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-text print:!bg-transparent print:!ring-0 print:cursor-text ${className}`}
       spellCheck={false}
-      dangerouslySetInnerHTML={{ __html: value || `<span class="text-gray-400 font-normal opacity-50">${placeholder}</span>` }}
     />
   );
 };

@@ -37,6 +37,8 @@ export const Toolbar = ({ printRef }: ToolbarProps) => {
           >
             <option value="rent_agreement">Rent Agreement (Draft)</option>
             <option value="affidavit">Affidavit</option>
+            <option value="sale_deed">Sale Deed</option>
+            <option value="plot_agreement">Plot Sale Agreement</option>
           </select>
         </div>
 

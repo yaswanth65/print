@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+.editable-field[contenteditable]:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+  pointer-events: none;
+}
+
 @theme {
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif: var(--font-serif), ui-serif, 'Georgia', Cambria, "Times New Roman", Times, serif;
@@ -9,13 +16,19 @@
   .document-paper {
     width: 210mm;
     min-height: 297mm;
-    padding: 18mm;
+    padding: 15mm;
     margin: 0 auto;
     background-color: white;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
     position: relative;
     flex-shrink: 0;
     box-sizing: border-box;
+  }
+
+  .sale-deed-paper {
+    margin: 0 auto;
+    position: relative;
+    flex-shrink: 0;
   }
 }
 
@@ -33,7 +46,7 @@
   .document-paper {
     width: 100% !important;
     min-height: 297mm !important;
-    padding: 18mm !important;
+    padding: 15mm !important;
     margin: 0 !important;
     background-color: white !important;
     box-shadow: none !important;
@@ -41,6 +54,32 @@
   }
   .document-paper:last-child {
     page-break-after: auto;
+  }
+
+  .sale-deed-paper {
+    width: 100% !important;
+    min-height: 297mm !important;
+    padding: 0.6in !important;
+    margin: 0 !important;
+    background-color: white !important;
+    box-shadow: none !important;
+    box-sizing: border-box !important;
+    page-break-after: always;
+  }
+
+  .sale-deed-paper:last-child {
+    page-break-after: auto;
+  }
+
+  .editable-field[contenteditable] {
+    background: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+    cursor: text !important;
+  }
+
+  .editable-field[contenteditable]:empty:before {
+    display: none !important;
   }
 
   @page {
@@ -64,4 +103,3 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: #94a3b8; /* slate-400 */
   }
-

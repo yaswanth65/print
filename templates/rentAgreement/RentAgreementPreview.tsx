@@ -17,33 +17,33 @@ export const RentAgreementPreview = () => {
             <span className="text-[10px] font-sans font-bold uppercase tracking-widest text-slate-300">Stamp Area</span>
         </div>
 
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-2xl font-bold uppercase tracking-tighter underline underline-offset-4">RENT AGREEMENT</h1>
         </div>
         
-        <p className="mb-6 leading-relaxed">
+        <p className="mb-4 leading-relaxed">
           THIS RENT AGREEMENT is made and executed at <EditableField template={t} fieldPath="place" value={d.place} className="font-bold" /> on this <EditableField template={t} fieldPath="date" value={d.date} className="font-bold underline" /> by and between:
         </p>
 
-        <p className="mb-6 leading-relaxed">
+        <p className="mb-4 leading-relaxed">
           <span className="font-bold"><EditableField template={t} fieldPath="landlord.name" value={d.landlord.name} /></span>, S/o <EditableField template={t} fieldPath="landlord.fatherName" value={d.landlord.fatherName} />, resident of <EditableField template={t} fieldPath="landlord.address" value={d.landlord.address} />, hereinafter called the <span className="font-bold">LESSOR</span> (which expression shall mean and include his heirs, legal representatives, successors and assigns) of the ONE PART.
         </p>
 
-        <p className="mb-6 italic text-center text-slate-500">- AND -</p>
+        <p className="mb-4 italic text-center text-slate-500">- AND -</p>
 
-        <p className="mb-10 leading-relaxed">
+        <p className="mb-6 leading-relaxed">
           <span className="font-bold"><EditableField template={t} fieldPath="tenant.name" value={d.tenant.name} /></span>, S/o <EditableField template={t} fieldPath="tenant.fatherName" value={d.tenant.fatherName} />, resident of <EditableField template={t} fieldPath="tenant.address" value={d.tenant.address} />, hereinafter called the <span className="font-bold">LESSEE</span> (which expression shall mean and include his heirs, legal representatives, successors and assigns) of the OTHER PART.
         </p>
 
-        <p className="mb-6 leading-relaxed">
+        <p className="mb-4 leading-relaxed">
           <span className="font-bold">WHEREAS</span> the Lessor is the absolute owner of the residential property situated at <span className="bg-yellow-50 px-1"><EditableField template={t} fieldPath="propertyAddress" value={d.propertyAddress} /></span> (hereinafter referred to as the "Demised Premises").
         </p>
 
-        <p className="mb-6 leading-relaxed">
+        <p className="mb-4 leading-relaxed">
           <span className="font-bold uppercase">Now This Agreement Witnesseth As Under:</span>
         </p>
 
-        <div className="space-y-4 text-sm mt-4">
+        <div className="space-y-3 text-sm mt-4">
           <p className="flex gap-4">
             <span className="font-bold">1.</span>
             <span>That the period of this lease shall be for a term of <span className="font-bold"><EditableField template={t} fieldPath="durationMonths" value={d.durationMonths} /> Months</span> commencing from <EditableField template={t} fieldPath="startDate" value={d.startDate} />.</span>
@@ -56,12 +56,6 @@ export const RentAgreementPreview = () => {
             <span className="font-bold">3.</span>
             <span>That the Lessee has deposited an interest-free security amount of <span className="font-bold underline">₹ <EditableField template={t} fieldPath="securityDeposit" value={d.securityDeposit} />/-</span> with the Lessor.</span>
           </p>
-        </div>
-      </div>
-
-      {/* PAGE 2 */}
-      <div className="document-paper pb-32">
-        <div className="space-y-4 text-sm">
           <p className="flex gap-4">
             <span className="font-bold">4.</span>
             <span>That either party can terminate this agreement by providing a notice of <span className="font-bold"><EditableField template={t} fieldPath="noticePeriodDays" value={d.noticePeriodDays} /></span> days in advance.</span>
@@ -85,52 +79,50 @@ export const RentAgreementPreview = () => {
         </div>
       </div>
 
-      {/* PAGE 3 */}
-      <div className="document-paper pb-32 flex flex-col justify-between">
-        <div>
-          <div className="space-y-4 text-sm">
-            <p className="flex gap-4">
-              <span className="font-bold">9.</span>
-              <span>That the Lessee shall keep the property in good condition. Minor repairs up to Rs. 1,000 shall be borne by the Lessee, while major structural repairs shall be handled by the Lessor.</span>
-            </p>
-            <p className="flex gap-4">
-              <span className="font-bold">10.</span>
-              <span>That the Lessor or his authorized agents shall have the right to enter the premises for inspection at reasonable times with prior notice to the Lessee.</span>
-            </p>
-          </div>
-          
-          <p className="mt-12 leading-relaxed text-sm">
-            <strong>IN WITNESS WHEREOF</strong>, both the LESSOR and LESSEE have mutually agreed and signed this agreement freely and without any force or coercion on this <EditableField template={t} fieldPath="date" value={d.date} className="font-bold" /> at <EditableField template={t} fieldPath="place" value={d.place} className="font-bold" />.
+      {/* PAGE 2 */}
+      <div className="document-paper flex flex-col">
+        <div className="space-y-3 text-sm">
+          <p className="flex gap-4">
+            <span className="font-bold">9.</span>
+            <span>That the Lessee shall keep the property in good condition. Minor repairs up to Rs. 1,000 shall be borne by the Lessee, while major structural repairs shall be handled by the Lessor.</span>
+          </p>
+          <p className="flex gap-4">
+            <span className="font-bold">10.</span>
+            <span>That the Lessor or his authorized agents shall have the right to enter the premises for inspection at reasonable times with prior notice to the Lessee.</span>
           </p>
         </div>
+        
+        <p className="mt-8 leading-relaxed text-sm">
+          <strong>IN WITNESS WHEREOF</strong>, both the LESSOR and LESSEE have mutually agreed and signed this agreement freely and without any force or coercion on this <EditableField template={t} fieldPath="date" value={d.date} className="font-bold" /> at <EditableField template={t} fieldPath="place" value={d.place} className="font-bold" />.
+        </p>
 
-        <div className="mt-24">
-          <div className="flex justify-between mt-12 mb-24">
+        <div className="mt-8">
+          <div className="flex justify-between mt-8">
             <div className="text-center w-64">
-              <div className="border-b border-slate-400 w-full mb-2 h-12"></div>
+              <div className="border-b border-slate-400 w-full mb-2 h-10"></div>
               <p className="font-bold tracking-wider text-sm">LESSOR</p>
               <p className="text-xs text-slate-500 mt-1">(<EditableField template={t} fieldPath="landlord.name" value={d.landlord.name} />)</p>
             </div>
             <div className="text-center w-64">
-              <div className="border-b border-slate-400 w-full mb-2 h-12"></div>
+              <div className="border-b border-slate-400 w-full mb-2 h-10"></div>
               <p className="font-bold tracking-wider text-sm">LESSEE</p>
               <p className="text-xs text-slate-500 mt-1">(<EditableField template={t} fieldPath="tenant.name" value={d.tenant.name} />)</p>
             </div>
           </div>
 
-          <div className="mt-16 text-sm">
-            <p className="font-bold mb-8">WITNESSES:</p>
+          <div className="mt-8 text-sm">
+            <p className="font-bold mb-4">WITNESSES:</p>
             <div className="flex justify-between">
               <div className="w-1/2 pr-8">
                 <p>1. Signature: ______________________</p>
-                <div className="mt-4 space-y-2">
+                <div className="mt-2 space-y-1">
                   <p>Name: __________________________</p>
                   <p>Address: ________________________</p>
                 </div>
               </div>
               <div className="w-1/2 pl-8">
                 <p>2. Signature: ______________________</p>
-                <div className="mt-4 space-y-2">
+                <div className="mt-2 space-y-1">
                   <p>Name: __________________________</p>
                   <p>Address: ________________________</p>
                 </div>

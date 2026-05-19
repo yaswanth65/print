@@ -2,6 +2,8 @@ import { forwardRef } from 'react';
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { RentAgreementPreview } from '@/templates/rentAgreement/RentAgreementPreview';
 import { AffidavitPreview } from '@/templates/affidavit/AffidavitPreview';
+import { SaleDeedPreview } from '@/templates/saleDeed/SaleDeedPreview';
+import { PlotAgreementPreview } from '@/templates/plotAgreement/PlotAgreementPreview';
 
 export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
   const { activeTemplate, zoom } = useDocumentStore();
@@ -18,6 +20,8 @@ export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
         >
           {activeTemplate === 'rent_agreement' && <RentAgreementPreview />}
           {activeTemplate === 'affidavit' && <AffidavitPreview />}
+          {activeTemplate === 'sale_deed' && <SaleDeedPreview />}
+          {activeTemplate === 'plot_agreement' && <PlotAgreementPreview />}
         </div>
         
       </div>
