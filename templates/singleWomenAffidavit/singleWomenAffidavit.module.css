@@ -1,0 +1,98 @@
+.single-women-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+/* Stamp paper top area placeholder for Non-Judicial Stamp Paper */
+.single-women-stamp {
+  height: 200px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  background-color: rgba(248, 250, 252, 0.5);
+}
+
+/* Heading title */
+.single-women-title {
+  text-align: center;
+  font-size: 14pt;
+  font-weight: bold;
+  text-decoration: underline;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  color: #000;
+}
+
+.single-women-subtitle {
+  text-align: center;
+  font-size: 13pt;
+  font-weight: bold;
+  text-decoration: underline;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  line-height: 1.3;
+  color: #000;
+}
+
+/* Body paragraphs */
+.single-women-paragraph {
+  text-align: justify;
+  font-size: 12pt;
+  line-height: 1.5;
+  margin-bottom: 14px;
+  color: #000;
+  text-indent: 40px;
+}
+
+.single-women-paragraph-noindent {
+  text-align: justify;
+  font-size: 12pt;
+  line-height: 1.5;
+  margin-bottom: 14px;
+  color: #000;
+}
+
+/* Self declaration closing line */
+.single-women-closing {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 12pt;
+  margin-top: 24px;
+  margin-bottom: 18px;
+  font-weight: normal;
+}
+
+/* Witnesses & Deponent section */
+.single-women-signatures {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.witness-block {
+  font-size: 12pt;
+  line-height: 1.6;
+}
+
+.deponent-block {
+  text-align: right;
+  font-size: 12pt;
+  font-weight: bold;
+  min-width: 200px;
+}
+
+.attestation-block {
+  font-size: 12pt;
+  line-height: 1.4;
+  margin-top: 20px;
+}

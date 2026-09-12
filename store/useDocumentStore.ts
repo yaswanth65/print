@@ -1,6 +1,7 @@
 import { create } from 'zustand';
+import type { FormTemplateMeta, TemplateDef, AnyTemplateDef } from '@/lib/types';
 
-export type TemplateType = 'rent_agreement' | 'affidavit' | 'sale_deed' | 'plot_agreement';
+export type TemplateType = 'rent_agreement' | 'affidavit' | 'sale_deed' | 'plot_agreement' | 'ssc_memo_affidavit' | 'cdma_death_correction' | 'lease_deed' | 'sbi_alias_general' | 'single_women_affidavit';
 export type EditMode = 'form' | 'direct';
 
 interface DocumentState {
@@ -12,12 +13,28 @@ interface DocumentState {
     affidavit: any;
     sale_deed: any;
     plot_agreement: any;
+    ssc_memo_affidavit: any;
+    cdma_death_correction: any;
+    lease_deed: any;
+    sbi_alias_general: any;
+    single_women_affidavit: any;
   };
   setActiveTemplate: (template: TemplateType) => void;
   setEditMode: (mode: EditMode) => void;
   setZoom: (zoom: number) => void;
   updateData: (template: TemplateType, newData: any) => void;
   updateField: (template: TemplateType, fieldPath: string, value: any) => void;
+
+  // Uploaded (dynamic) form templates
+  forms: FormTemplateMeta[];
+  activeFormId: string | null;
+  formDefs: Record<string, AnyTemplateDef>;
+  formValues: Record<string, Record<string, string>>;
+  setForms: (forms: FormTemplateMeta[]) => void;
+  setActiveForm: (id: string | null) => void;
+  setFormDef: (formId: string, def: AnyTemplateDef) => void;
+  setFormValues: (formId: string, values: Record<string, string>) => void;
+  setFormValue: (formId: string, key: string, value: string) => void;
 }
 
 const initialRentAgreement = {
@@ -61,6 +78,26 @@ const initialAffidavit = {
     'That my name is correctly spelt as "Vikram Singh" in all my educational certificates.',
     'That I am applying for a fresh passport and the information provided in the application is true and correct to the best of my knowledge.',
   ],
+};
+
+const initialSscMemoAffidavit = {
+  name: 'K. SONA BAI',
+  relation: 'D/o.',
+  fatherName: 'SUBHASH',
+  age: '25',
+  address: 'H.No. 6-9-97, Namdev Wada, NIZAMABAD proper and district, Telangana',
+  examination: 'Secondary School Certificate Public Examination',
+  examMonth: 'MARCH',
+  examYear: '2004',
+  rollNo: '0657747',
+  school: 'RAOJI SANGAM HIGH SCHOOL, NIZAMABAD',
+  board: 'Board of Secondary Education, A.P. Hyderabad',
+  lostDate: '26-02-2015',
+  journeyMode: 'RTC Bus',
+  journeyFrom: 'Armoor',
+  journeyTo: 'Balkonda',
+  declarationDate: '18-04-2015',
+  declarationPlace: 'Armoor',
 };
 
 const initialSaleDeed = {
@@ -198,6 +235,130 @@ const initialPlotAgreement = {
   defaultInterest: '12',
 };
 
+const initialCdmaDeathCorrection = {
+  price: '₹1',
+  district: 'Nizamabad',
+  registrationUnitId: 'RU-1049',
+  registrationNumber: 'REG-2023-8841',
+  registrationYear: '2023',
+  deathYear: '2023',
+  locationType: 'Municipality', // 'Greater Municipality' | 'Municipality' | 'Municipal Corporation' | 'Gram Panchayat'
+  gender: 'Male', // 'Male' | 'Female'
+  updateDeceasedName: 'No', // 'Yes' | 'No'
+  changedChildSurname: '',
+  changedChildName: '',
+  updateDateOfDeath: 'No', // 'Yes' | 'No'
+  changedDateOfDeath: '',
+  updateGender: 'No', // 'Yes' | 'No'
+  changedGender: 'Male', // 'Male' | 'Female'
+  updateFatherName: 'No', // 'Yes' | 'No'
+  changedFatherSurname: '',
+  changedFatherName: '',
+  updateMotherName: 'No', // 'Yes' | 'No'
+  changedMotherSurname: '',
+  changedMotherName: '',
+  updateDeathPlace: 'No', // 'Yes' | 'No'
+  changedDeathPlace: '',
+  updateDeathAddress: 'No', // 'Yes' | 'No'
+  changedDeathAddressLine1: '',
+  changedDeathAddressLine2: '',
+  changedDeathAddressLine3: '',
+  updatePermAddress: 'No', // 'Yes' | 'No'
+  changedPermAddressLine1: '',
+  changedPermAddressLine2: '',
+  changedPermAddressLine3: '',
+  informantName: 'K. Ramesh Babu',
+  informantRelation: 'S/o', // 'S/o' | 'D/o' | 'w/o' | 'H/o' | 'M/o' | 'F/O' | 'C/o'
+  informantAddress1: 'H.No. 4-12/1, Subhash Nagar',
+  informantAddress2: 'Armoor Town',
+  informantAddress3: 'Nizamabad Dist.',
+  mobileNumber: '9848012345',
+  emailId: 'ramesh.k@gmail.com',
+  remarks: 'Correction in spelling of names as per school records',
+  pincode: '503224',
+  deliveryType: 'Manual / In Person', // 'Manual / In Person' | 'Post − Local' | 'Post − Nonlocal'
+  purposeOfCertificate: 'Legal Heir & Pension Settlement',
+  noOfCopies: '2',
+};
+
+const initialLeaseDeed = {
+  agreementDay: '18',
+  agreementMonthYear: 'October, 2022',
+  wefDate: '01/10/2022',
+  lessorName: 'RAMAGIRI KISHAN',
+  lessorFatherName: 'RAMAGIRI RAGHUNATH',
+  lessorAge: '54',
+  lessorOccupation: 'Business',
+  lessorAddress: 'H.No. 5-4/B/2, KALIGOTE Village of JAKRANPALLY Mandal, Dist. Nizamabad, Telangana State',
+  lesseeName: 'SIDDAPALLI RAJESHWAR',
+  lesseeFatherName: 'SIDDAPALLI BABANNA',
+  lesseeAge: '42',
+  lesseeOccupation: 'Business',
+  lesseeAddress: 'H.No.  1-67/8, BABA NAGAR village of BHEEMGAL Mandal, Dist. Nizamabad, T.S',
+  doorNo: '12-29/3',
+  road: 'N.H.16 Road',
+  landmark: 'Khandesh Complex',
+  village: 'MAMIDIPALLY',
+  mandal: 'ARMOOR',
+  district: 'Nizamabad',
+  monthlyRent: '11000',
+  rentWords: 'Eleven Thousand',
+  rentDueDay: '5th',
+  extensionYears: 'four',
+  leasePeriod: 'ONE YEAR',
+  commencementDate: '01-10-2022',
+  endDate: '31-09-2023',
+  businessName: 'MAHALAXMI COLLECTIONS & KIDS WEAR',
+  advanceAmount: '50,000',
+  advanceWords: 'Fifty thousand',
+  witness1: 'M. Gangadhar, R/o Armoor',
+  witness2: 'P. Srinivas, R/o Mamidipally',
+};
+
+const initialSbiAliasGeneral = {
+  bankName: 'STATE BANK OF INDIA',
+  branchName: 'ARMOOR',
+  assumedName: 'Sri. CHINTALAPALLY GANGAREDDY',
+  previousName: 'CHINTLAPALLY PEDDA GANGAREDDY',
+  relation: 'SON OF',
+  relativeName: 'CHINTALAPALLY BOJANNA',
+  previousDocType: 'Patta Pass Book', // e.g. 'Patta Pass Book' | 'Pan Card' | 'Bank Account'
+  previousDocNumber: 'T11010090078',
+  aadharNumber: '6017 8940 6754',
+  age: '34',
+  occupation: 'HOME MAKER',
+  hNo: '2-22',
+  village: 'MAGGIDI',
+  mandal: 'ARMOOR',
+  district: 'Nizamabad',
+  pincode: '503224',
+  declarationDate: '01/09/2026',
+  declarationPlace: 'Armoor',
+};
+
+const initialSingleWomenAffidavit = {
+  applicantName: 'VEMULA SHOBA',
+  relation: 'DAUGHTER OF',
+  relativeName: 'VEMULA REDDANNA',
+  age: '41',
+  occupation: 'Labour',
+  hNo: '7-21',
+  village: 'ANKSAPOOR',
+  mandal: 'VELPOOR',
+  district: 'Nizamabad',
+  state: 'Telangana',
+  pincode: '503311',
+  aadharNumber: '6469 4213 5938',
+  exHusbandName: 'BODASU NARSAIAH',
+  exHusbandFatherName: 'POSHETTY',
+  exHusbandVillage: 'SIKINDRAPUR',
+  exHusbandMandal: 'JAKRANPALLY',
+  marriageDate: '23.11.2005',
+  divorceTime: '14 years long back ago',
+  affidavitDate: '26/06/2026',
+  affidavitPlace: 'ARMOOR',
+};
+
 export const useDocumentStore = create<DocumentState>((set) => ({
   activeTemplate: 'rent_agreement',
   editMode: 'form',
@@ -207,8 +368,17 @@ export const useDocumentStore = create<DocumentState>((set) => ({
     affidavit: initialAffidavit,
     sale_deed: initialSaleDeed,
     plot_agreement: initialPlotAgreement,
+    ssc_memo_affidavit: initialSscMemoAffidavit,
+    cdma_death_correction: initialCdmaDeathCorrection,
+    lease_deed: initialLeaseDeed,
+    sbi_alias_general: initialSbiAliasGeneral,
+    single_women_affidavit: initialSingleWomenAffidavit,
   },
-  setActiveTemplate: (template) => set({ activeTemplate: template }),
+  forms: [],
+  activeFormId: null,
+  formDefs: {},
+  formValues: {},
+  setActiveTemplate: (template) => set({ activeTemplate: template, activeFormId: null }),
   setEditMode: (mode) => set({ editMode: mode }),
   setZoom: (zoom) => set({ zoom }),
   updateData: (template, newData) =>
@@ -245,4 +415,24 @@ export const useDocumentStore = create<DocumentState>((set) => ({
         }
       };
     }),
+  setForms: (forms) => set({ forms }),
+  setActiveForm: (activeFormId) => set({ activeFormId }),
+  setFormDef: (formId, def) =>
+    set((state) => ({
+      formDefs: { ...state.formDefs, [formId]: def },
+    })),
+  setFormValues: (formId, values) =>
+    set((state) => ({
+      formValues: { ...state.formValues, [formId]: values },
+    })),
+  setFormValue: (formId, key, value) =>
+    set((state) => ({
+      formValues: {
+        ...state.formValues,
+        [formId]: {
+          ...(state.formValues[formId] ?? {}),
+          [key]: value,
+        },
+      },
+    })),
 }));

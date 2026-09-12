@@ -18,6 +18,20 @@ export const documents = pgTable('documents', {
   printed_at: timestamp('printed_at').defaultNow(),
 });
 
+export const formTemplates = pgTable('form_templates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: varchar('title', { length: 255 }).notNull(),
+  source_type: varchar('source_type', { length: 32 }),
+  original_filename: varchar('original_filename', { length: 512 }),
+  file_path: varchar('file_path', { length: 1024 }),
+  extracted_text: text('extracted_text'),
+  template_def: jsonb('template_def'),
+  status: varchar('status', { length: 32 }).default('DRAFT').notNull(),
+  created_by: uuid('created_by'),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at'),
+});
+
 export const transactions = pgTable('transactions', {
   id: uuid('id').primaryKey().defaultRandom(),
   document_id: uuid('document_id'),

@@ -1,0 +1,82 @@
+/* ==========================================================================
+   LEASE DEED (COMMERCIAL / MULGIE) - PRINT & PREVIEW STYLES
+   Edit this file directly to adjust fonts, line spacing, margins, etc.
+   ========================================================================== */
+
+.lease-container {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+  text-align: justify;
+  font-size: 11pt;
+  line-height: 1.65;
+  color: #111111;
+}
+
+.lease-paper {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 20mm 20mm 15mm 20mm;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  margin: 0 auto 2rem auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.lease-stamp-space {
+  width: 100%;
+  height: 176px;
+  border: 2px dashed #d1d5db;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  background-color: rgba(249, 250, 251, 0.5);
+}
+
+.lease-title {
+  font-size: 14pt;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  margin-bottom: 32px;
+}
+
+.lease-page-num {
+  text-align: center;
+  font-weight: bold;
+  font-size: 11pt;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+}
+
+.lease-clause-heading {
+  font-size: 11.5pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  letter-spacing: 0.05em;
+}
+
+.lease-contd {
+  text-align: right;
+  font-size: 10pt;
+  font-family: Arial, sans-serif;
+  font-weight: 600;
+  color: #6b7280;
+  padding-top: 16px;
+}
+
+.lease-paragraph {
+  margin-bottom: 20px;
+  text-indent: 3rem;
+}
+
+.lease-clause {
+  margin-bottom: 20px;
+  text-indent: 2rem;
+}

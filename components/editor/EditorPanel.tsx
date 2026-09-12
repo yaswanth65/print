@@ -1,6 +1,7 @@
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { useForm } from 'react-hook-form';
 import { useEffect } from 'react';
+import { DynamicForm } from '@/components/dynamic/DynamicForm';
 
 // Common Input Component
 const InputField = ({ label, register, name, placeholder = '', type = 'text', as = 'input' }: any) => {
@@ -453,8 +454,440 @@ const AffidavitForm = () => {
   );
 };
 
+// SSC Memo Lost Affidavit Form
+const SscMemoAffidavitForm = () => {
+  const { data, updateData } = useDocumentStore();
+  const { register, watch, reset } = useForm({
+    defaultValues: data.ssc_memo_affidavit
+  });
+
+  useEffect(() => {
+    reset(data.ssc_memo_affidavit);
+  }, [data.ssc_memo_affidavit, reset]);
+
+  const formValues = watch();
+  const formValuesString = JSON.stringify(formValues);
+
+  useEffect(() => {
+    updateData('ssc_memo_affidavit', JSON.parse(formValuesString));
+  }, [formValuesString, updateData]);
+
+  return (
+    <div className="flex-1 overflow-y-auto p-5 space-y-8 custom-scrollbar">
+      <div>
+        <SectionHeader number="01" title="Deponent Information" />
+        <InputField label="Full Name" name="name" register={register} />
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Relation" name="relation" register={register} />
+          <div className="col-span-2">
+            <InputField label="Father's Name" name="fatherName" register={register} />
+          </div>
+        </div>
+        <InputField label="Age" name="age" register={register} />
+        <InputField label="Residential Address" name="address" register={register} as="textarea" />
+      </div>
+
+      <div>
+        <SectionHeader number="02" title="Examination Details" />
+        <InputField label="Examination Name" name="examination" register={register} />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Month" name="examMonth" register={register} />
+          <InputField label="Year" name="examYear" register={register} />
+        </div>
+        <InputField label="Roll No." name="rollNo" register={register} />
+        <InputField label="School / Institute" name="school" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="03" title="Loss Details" />
+        <InputField label="Issuing Board" name="board" register={register} />
+        <InputField label="Date of Loss" name="lostDate" register={register} />
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Journey Mode" name="journeyMode" register={register} />
+          <InputField label="From" name="journeyFrom" register={register} />
+          <InputField label="To" name="journeyTo" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="04" title="Notary Details" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Declaration / Oath Date" name="declarationDate" register={register} />
+          <InputField label="Place of Oath" name="declarationPlace" register={register} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// CDMA Death Correction Form
+const CdmaDeathCorrectionForm = () => {
+  const { data, updateData } = useDocumentStore();
+  const { register, watch, reset } = useForm({
+    defaultValues: data.cdma_death_correction
+  });
+
+  useEffect(() => {
+    reset(data.cdma_death_correction);
+  }, [data.cdma_death_correction, reset]);
+
+  const formValues = watch();
+  const formValuesString = JSON.stringify(formValues);
+
+  useEffect(() => {
+    updateData('cdma_death_correction', JSON.parse(formValuesString));
+  }, [formValuesString, updateData]);
+
+  return (
+    <div className="flex-1 overflow-y-auto p-5 space-y-8 custom-scrollbar">
+      <div>
+        <SectionHeader number="01" title="Death Details" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="District" name="district" register={register} />
+          <InputField label="Reg. Unit ID" name="registrationUnitId" register={register} />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Registration Number" name="registrationNumber" register={register} />
+          <InputField label="Reg. Year" name="registrationYear" register={register} />
+          <InputField label="Death Year" name="deathYear" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Location Type" name="locationType" register={register} />
+          <InputField label="Gender" name="gender" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="02" title="Name &amp; Date of Death Corrections" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Update Deceased Name (Yes/No)" name="updateDeceasedName" register={register} />
+          <InputField label="Update Date of Death (Yes/No)" name="updateDateOfDeath" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Changed Child Surname" name="changedChildSurname" register={register} />
+          <InputField label="Changed Child Name" name="changedChildName" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Changed Date of Death" name="changedDateOfDeath" register={register} />
+          <InputField label="Changed Gender" name="changedGender" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="03" title="Parents &amp; Place Corrections" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Update Father Name (Yes/No)" name="updateFatherName" register={register} />
+          <InputField label="Update Mother Name (Yes/No)" name="updateMotherName" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Changed Father Surname" name="changedFatherSurname" register={register} />
+          <InputField label="Changed Father Name" name="changedFatherName" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Changed Mother Surname" name="changedMotherSurname" register={register} />
+          <InputField label="Changed Mother Name" name="changedMotherName" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Update Death Place (Yes/No)" name="updateDeathPlace" register={register} />
+          <InputField label="Changed Death Place" name="changedDeathPlace" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="04" title="Address Corrections" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Update Address at Death (Yes/No)" name="updateDeathAddress" register={register} />
+          <InputField label="Update Perm. Address (Yes/No)" name="updatePermAddress" register={register} />
+        </div>
+        <div className="space-y-2">
+          <span className="text-[10px] font-bold text-slate-400 uppercase">Address at Death</span>
+          <InputField label="Line 1" name="changedDeathAddressLine1" register={register} />
+          <InputField label="Line 2" name="changedDeathAddressLine2" register={register} />
+          <InputField label="Line 3" name="changedDeathAddressLine3" register={register} />
+        </div>
+        <div className="space-y-2">
+          <span className="text-[10px] font-bold text-slate-400 uppercase">Permanent Address</span>
+          <InputField label="Line 1" name="changedPermAddressLine1" register={register} />
+          <InputField label="Line 2" name="changedPermAddressLine2" register={register} />
+          <InputField label="Line 3" name="changedPermAddressLine3" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="05" title="Informant Details" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Informant Name" name="informantName" register={register} />
+          <InputField label="Relation (e.g. S/o, D/o)" name="informantRelation" register={register} />
+        </div>
+        <InputField label="Address Line 1" name="informantAddress1" register={register} />
+        <InputField label="Address Line 2" name="informantAddress2" register={register} />
+        <InputField label="Address Line 3" name="informantAddress3" register={register} />
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Mobile" name="mobileNumber" register={register} />
+          <InputField label="Email ID" name="emailId" register={register} />
+          <InputField label="PIN Code" name="pincode" register={register} />
+        </div>
+        <InputField label="Remarks" name="remarks" register={register} />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Delivery Type" name="deliveryType" register={register} />
+          <InputField label="No of Copies" name="noOfCopies" register={register} />
+        </div>
+        <InputField label="Purpose of Certificate" name="purposeOfCertificate" register={register} />
+      </div>
+    </div>
+  );
+};
+
+// Lease Deed Form
+const LeaseDeedForm = () => {
+  const { data, updateData } = useDocumentStore();
+  const { register, watch, reset } = useForm({
+    defaultValues: data.lease_deed
+  });
+
+  useEffect(() => {
+    reset(data.lease_deed);
+  }, [data.lease_deed, reset]);
+
+  const formValues = watch();
+  const formValuesString = JSON.stringify(formValues);
+
+  useEffect(() => {
+    updateData('lease_deed', JSON.parse(formValuesString));
+  }, [formValuesString, updateData]);
+
+  return (
+    <div className="flex-1 overflow-y-auto p-5 space-y-8 custom-scrollbar">
+      <div>
+        <SectionHeader number="01" title="Agreement Date &amp; Effective Date" />
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Day" name="agreementDay" register={register} />
+          <InputField label="Month & Year" name="agreementMonthYear" register={register} />
+          <InputField label="w.e.f Date" name="wefDate" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="02" title="Lessor (Owner) Information" />
+        <InputField label="Full Name" name="lessorName" register={register} />
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Age" name="lessorAge" register={register} />
+          <div className="col-span-2">
+            <InputField label="Father's Name" name="lessorFatherName" register={register} />
+          </div>
+        </div>
+        <InputField label="Occupation" name="lessorOccupation" register={register} />
+        <InputField label="Residential Address" name="lessorAddress" register={register} as="textarea" />
+      </div>
+
+      <div>
+        <SectionHeader number="03" title="Lessee (Tenant) Information" />
+        <InputField label="Full Name" name="lesseeName" register={register} />
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Age" name="lesseeAge" register={register} />
+          <div className="col-span-2">
+            <InputField label="Father's Name" name="lesseeFatherName" register={register} />
+          </div>
+        </div>
+        <InputField label="Occupation" name="lesseeOccupation" register={register} />
+        <InputField label="Residential Address" name="lesseeAddress" register={register} as="textarea" />
+      </div>
+
+      <div>
+        <SectionHeader number="04" title="Leased Property (Shop Room / Mulgie)" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Door No." name="doorNo" register={register} />
+          <InputField label="Road / Location" name="road" register={register} />
+        </div>
+        <InputField label="Landmark" name="landmark" register={register} />
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Village" name="village" register={register} />
+          <InputField label="Mandal" name="mandal" register={register} />
+          <InputField label="District" name="district" register={register} />
+        </div>
+        <InputField label="Business Name" name="businessName" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="05" title="Rent &amp; Financial Terms" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Monthly Rent (Rs)" name="monthlyRent" register={register} />
+          <InputField label="Rent in Words" name="rentWords" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Rent Due Day (e.g. 5th)" name="rentDueDay" register={register} />
+          <InputField label="Extension Years (e.g. four)" name="extensionYears" register={register} />
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Lease Period" name="leasePeriod" register={register} />
+          <InputField label="Start Date" name="commencementDate" register={register} />
+          <InputField label="End Date" name="endDate" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Advance Amount (Rs)" name="advanceAmount" register={register} />
+          <InputField label="Advance in Words" name="advanceWords" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="06" title="Witnesses" />
+        <InputField label="Witness 1" name="witness1" register={register} />
+        <InputField label="Witness 2" name="witness2" register={register} />
+      </div>
+    </div>
+  );
+};
+
+// SBI Alias General Form
+const SbiAliasGeneralForm = () => {
+  const { data, updateData } = useDocumentStore();
+  const { register, watch, reset } = useForm({
+    defaultValues: data.sbi_alias_general
+  });
+
+  useEffect(() => {
+    reset(data.sbi_alias_general);
+  }, [data.sbi_alias_general, reset]);
+
+  const formValues = watch();
+  const formValuesString = JSON.stringify(formValues);
+
+  useEffect(() => {
+    updateData('sbi_alias_general', JSON.parse(formValuesString));
+  }, [formValuesString, updateData]);
+
+  return (
+    <div className="flex-1 overflow-y-auto p-5 space-y-8 custom-scrollbar">
+      <div>
+        <SectionHeader number="01" title="Bank &amp; Branch" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Bank Name" name="bankName" register={register} />
+          <InputField label="Branch" name="branchName" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="02" title="Names &amp; Relation" />
+        <InputField label="Assumed Name (Aadhar)" name="assumedName" register={register} />
+        <InputField label="Previous Name (Bank/Other)" name="previousName" register={register} />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Relation (e.g. SON OF, WIFE OF)" name="relation" register={register} />
+          <InputField label="Father / Husband Name" name="relativeName" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="03" title="Documents &amp; Numbers" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Previous Doc Type" name="previousDocType" register={register} placeholder="e.g. Patta Pass Book, Pan Card" />
+          <InputField label="Previous Doc Number" name="previousDocNumber" register={register} />
+        </div>
+        <InputField label="Aadhar Card Number" name="aadharNumber" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="04" title="Personal Details &amp; Address" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Age" name="age" register={register} />
+          <InputField label="Occupation" name="occupation" register={register} />
+        </div>
+        <InputField label="House Number" name="hNo" register={register} />
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Village" name="village" register={register} />
+          <InputField label="Mandal" name="mandal" register={register} />
+          <InputField label="District" name="district" register={register} />
+        </div>
+        <InputField label="Pin Code" name="pincode" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="05" title="Oath / Declaration" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Date" name="declarationDate" register={register} />
+          <InputField label="Place" name="declarationPlace" register={register} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Single Women Ontari Mahila Affidavit Form
+const SingleWomenAffidavitForm = () => {
+  const { data, updateData } = useDocumentStore();
+  const { register, watch, reset } = useForm({
+    defaultValues: data.single_women_affidavit,
+  });
+
+  useEffect(() => {
+    reset(data.single_women_affidavit);
+  }, [data.single_women_affidavit, reset]);
+
+  const formValues = watch();
+  const formValuesString = JSON.stringify(formValues);
+
+  useEffect(() => {
+    updateData('single_women_affidavit', JSON.parse(formValuesString));
+  }, [formValuesString, updateData]);
+
+  return (
+    <div className="flex-1 overflow-y-auto p-5 space-y-8 custom-scrollbar">
+      <div>
+        <SectionHeader number="01" title="Applicant (Ontari Mahila) Info" />
+        <InputField label="Applicant Name" name="applicantName" register={register} />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Relation (e.g. DAUGHTER OF, WIFE OF)" name="relation" register={register} />
+          <InputField label="Father / Relative Name" name="relativeName" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Age" name="age" register={register} />
+          <InputField label="Occupation" name="occupation" register={register} />
+        </div>
+        <InputField label="Aadhaar Card Number" name="aadharNumber" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="02" title="Residential Address" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="H.No" name="hNo" register={register} />
+          <InputField label="Village / Locality" name="village" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Mandal" name="mandal" register={register} />
+          <InputField label="District" name="district" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="State" name="state" register={register} />
+          <InputField label="Pin Code" name="pincode" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="03" title="Ex-Husband & Separation Details" />
+        <InputField label="Ex-Husband Name" name="exHusbandName" register={register} />
+        <InputField label="Ex-Husband's Father Name" name="exHusbandFatherName" register={register} />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Ex-Husband Village" name="exHusbandVillage" register={register} />
+          <InputField label="Ex-Husband Mandal" name="exHusbandMandal" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Marriage Date (e.g. 23.11.2005)" name="marriageDate" register={register} />
+          <InputField label="Divorce Duration (e.g. 14 years long back ago)" name="divorceTime" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="04" title="Sworn Date & Place" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Date (e.g. 26/06/2026)" name="affidavitDate" register={register} />
+          <InputField label="Place (e.g. ARMOOR)" name="affidavitPlace" register={register} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const EditorPanel = () => {
-  const { activeTemplate, editMode } = useDocumentStore();
+  const { activeTemplate, editMode, activeFormId } = useDocumentStore();
 
   if (editMode === 'direct') {
     return (
@@ -476,10 +909,21 @@ export const EditorPanel = () => {
         <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Document Data</h2>
       </div>
       
-      {activeTemplate === 'rent_agreement' && <RentAgreementForm />}
-      {activeTemplate === 'affidavit' && <AffidavitForm />}
-      {activeTemplate === 'sale_deed' && <SaleDeedForm />}
-      {activeTemplate === 'plot_agreement' && <PlotAgreementForm />}
+      {activeFormId ? (
+        <DynamicForm formId={activeFormId} />
+      ) : (
+        <>
+          {activeTemplate === 'rent_agreement' && <RentAgreementForm />}
+          {activeTemplate === 'affidavit' && <AffidavitForm />}
+          {activeTemplate === 'sale_deed' && <SaleDeedForm />}
+          {activeTemplate === 'plot_agreement' && <PlotAgreementForm />}
+          {activeTemplate === 'ssc_memo_affidavit' && <SscMemoAffidavitForm />}
+          {activeTemplate === 'cdma_death_correction' && <CdmaDeathCorrectionForm />}
+          {activeTemplate === 'lease_deed' && <LeaseDeedForm />}
+          {activeTemplate === 'sbi_alias_general' && <SbiAliasGeneralForm />}
+          {activeTemplate === 'single_women_affidavit' && <SingleWomenAffidavitForm />}
+        </>
+      )}
 
       <div className="p-3 border-t border-slate-100 bg-slate-50 flex-shrink-0">
         <p className="text-[10px] text-slate-400 text-center italic">Auto-saving local changes...</p>

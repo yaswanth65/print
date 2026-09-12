@@ -1,0 +1,135 @@
+/* ==========================================================================
+   CDMA DEATH CORRECTIONS APPLICATION FORM - PRINT & PREVIEW STYLES
+   Edit this file directly to adjust fonts, sizes, underlines, margins, etc.
+   ========================================================================== */
+
+.cdma-document-container {
+  font-family: Calibri, Arial, sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.3;
+  color: #000000;
+}
+
+.cdma-paper {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 14mm 16mm 10mm 16mm;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  color: #000000;
+  margin: 0 auto;
+}
+
+/* Header */
+.cdma-header-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.cdma-logo-img {
+  height: 56px;
+  width: auto;
+  object-fit: contain;
+}
+
+.cdma-price {
+  text-align: right;
+  font-size: 11pt;
+  font-family: Georgia, "Times New Roman", serif;
+  margin-top: -20px;
+  margin-bottom: 12px;
+  padding-right: 8px;
+}
+
+.cdma-title {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.cdma-title h1 {
+  font-size: 13pt;
+  font-weight: bold;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* Section Headings */
+.cdma-section-title {
+  font-size: 10pt;
+  font-weight: bold;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  margin-bottom: 6px;
+}
+
+/* Fields & Underlines */
+.cdma-field-row {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.cdma-label {
+  font-size: 8.5pt;
+  font-weight: bold;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.cdma-line {
+  border-bottom: 1px solid #4a4a4a;
+  flex: 1;
+  padding: 0 4px;
+  min-height: 16px;
+}
+
+/* Checkboxes */
+.cdma-checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 8.5pt;
+}
+
+.cdma-checkbox-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+  user-select: none;
+  margin-right: 4px;
+}
+
+.cdma-checkbox-box {
+  font-family: monospace;
+  font-size: 10pt;
+  line-height: 1;
+}
+
+/* Document Checklist */
+.cdma-doc-list {
+  list-style-type: decimal;
+  padding-left: 24px;
+  font-size: 8pt;
+  color: #111111;
+  line-height: 1.25;
+}
+
+.cdma-doc-list li {
+  margin-bottom: 2px;
+}
+
+.cdma-note {
+  font-size: 8pt;
+  font-weight: bold;
+  color: #dc2626; /* red-600 */
+  text-align: center;
+  margin-top: 12px;
+  padding-top: 4px;
+}
