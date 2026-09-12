@@ -197,15 +197,6 @@ export const Toolbar = ({ printRef }: ToolbarProps) => {
 
         {/* Right Group */}
         <div className="flex items-center gap-3">
-          
-          <Link
-            href="/admin2"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 border border-indigo-200 rounded-md hover:bg-indigo-50"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            Form Builder
-          </Link>
-          
           {/* Editor Mode Toggle */}
           <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
             <button 
