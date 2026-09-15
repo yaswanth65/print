@@ -4,9 +4,10 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 20px 0;
+  padding: 15px 0;
 }
 
+/* Authentic CR80 credit-card ratio: 85.6 x 53.98 mm scaled for preview */
 .id-card {
   width: 130mm;
   height: 82mm;
@@ -21,6 +22,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .id-header {
@@ -90,9 +92,10 @@
 
 .id-body {
   display: flex;
-  padding: 10px 14px;
-  gap: 14px;
+  padding: 8px 12px;
+  gap: 12px;
   flex: 1;
+  align-items: center;
 }
 
 .id-photo-box {
@@ -134,7 +137,7 @@
 
 .id-details {
   flex: 1;
-  font-size: 11.5px;
+  font-size: 11px;
   line-height: 1.45;
   display: flex;
   flex-direction: column;
@@ -143,7 +146,7 @@
 
 .id-row {
   display: flex;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   align-items: baseline;
 }
 
@@ -152,7 +155,7 @@
 }
 
 .id-label {
-  width: 110px;
+  width: 105px;
   font-weight: 700;
   color: #0f3567;
   flex-shrink: 0;
@@ -173,23 +176,74 @@
 }
 
 .id-footer {
-  padding: 0 16px 8px 16px;
+  padding: 0 14px 6px 14px;
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
 }
 
 .id-authority {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 600;
   color: #111827;
   text-align: right;
 }
 
+/* BACK SIDE STYLES */
+.id-back-header {
+  background: #1e293b;
+  color: #ffffff;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.id-back-body {
+  display: flex;
+  padding: 8px 12px;
+  gap: 12px;
+  flex: 1;
+  align-items: center;
+}
+
+.id-back-content {
+  flex: 1;
+}
+
+.id-qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.id-qr-box {
+  width: 25mm;
+  height: 25mm;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.id-back-footer {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  padding: 4px 12px;
+  font-size: 9.5px;
+  color: #475569;
+  text-align: center;
+  font-weight: 500;
+}
+
 @media print {
   .id-card {
     box-shadow: none !important;
-    margin: 20px auto !important;
     page-break-inside: avoid;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;

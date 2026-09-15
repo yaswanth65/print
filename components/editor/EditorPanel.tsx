@@ -1,7 +1,7 @@
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { useForm } from 'react-hook-form';
 import { useEffect, useRef } from 'react';
-import { Camera, Upload } from 'lucide-react';
+import { Camera, Upload, Plus, Trash2, X, CreditCard, Layers } from 'lucide-react';
 
 // Common Input Component
 const InputField = ({ label, register, name, placeholder = '', type = 'text', as = 'input' }: any) => {
@@ -889,7 +889,19 @@ const SingleWomenAffidavitForm = () => {
 
 // CV / Resume Form
 const CvResumeForm = () => {
-  const { data, updateData, updateField } = useDocumentStore();
+  const {
+    data,
+    updateData,
+    updateField,
+    addCvWorkExperience,
+    removeCvWorkExperience,
+    addCvWorkPoint,
+    removeCvWorkPoint,
+    addCvEducation,
+    removeCvEducation,
+    addCvEducationDetail,
+    removeCvEducationDetail,
+  } = useDocumentStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { register, watch, reset } = useForm({
     defaultValues: data.cv_resume,
@@ -919,8 +931,13 @@ const CvResumeForm = () => {
     reader.readAsDataURL(file);
   };
 
+  const cv = data.cv_resume || {};
+  const workExperience = cv.workExperience || [];
+  const education = cv.education || [];
+
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      {/* PHOTO */}
       <div>
         <SectionHeader number="01" title="Candidate Photo" />
         <input
@@ -932,8 +949,8 @@ const CvResumeForm = () => {
         />
         <div className="flex items-center gap-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
           <div className="w-16 h-18 rounded border border-slate-300 overflow-hidden bg-white flex-shrink-0">
-            {data.cv_resume.photo ? (
-              <img src={data.cv_resume.photo} alt="Photo" className="w-full h-full object-cover" />
+            {cv.photo ? (
+              <img src={cv.photo} alt="Photo" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-slate-400">
                 <Camera className="w-6 h-6" />
@@ -954,6 +971,7 @@ const CvResumeForm = () => {
         </div>
       </div>
 
+      {/* CONTACT & HEADER */}
       <div>
         <SectionHeader number="02" title="Contact & Header" />
         <InputField label="Full Name" name="fullName" register={register} />
@@ -965,13 +983,253 @@ const CvResumeForm = () => {
         <InputField label="Website / Portfolio" name="website" register={register} />
       </div>
 
+      {/* SUMMARY */}
       <div>
         <SectionHeader number="03" title="Professional Summary" />
         <InputField label="Summary" name="summary" as="textarea" register={register} />
       </div>
 
+      {/* WORK EXPERIENCE (ADD / REMOVE CONTENT) */}
       <div>
-        <SectionHeader number="04" title="Skills & Additional Information" />
+        <div className="flex items-center justify-between mb-3">
+          <SectionHeader number="04" title="Work Experience" />
+          <button
+            type="button"
+            onClick={addCvWorkExperience}
+            className="px-2.5 py-1 bg-blue-50 text-[#2C75FF] hover:bg-blue-100 rounded text-xs font-medium border border-blue-200 flex items-center gap-1 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add Position
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {workExperience.map((work: any, wIdx: number) => (
+            <div key={wIdx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative group">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-700">Position #{wIdx + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => removeCvWorkExperience(wIdx)}
+                  className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 text-xs flex items-center gap-1"
+                  title="Remove Position"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Remove</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Job Title</label>
+                  <input
+                    type="text"
+                    value={work.role || ''}
+                    onChange={(e) => {
+                      const updated = structuredClone(workExperience);
+                      updated[wIdx].role = e.target.value;
+                      updateField('cv_resume', 'workExperience', updated);
+                    }}
+                    placeholder="e.g. Senior Engineer"
+                    className="w-full border border-slate-300 rounded p-1.5 text-xs bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Company</label>
+                  <input
+                    type="text"
+                    value={work.company || ''}
+                    onChange={(e) => {
+                      const updated = structuredClone(workExperience);
+                      updated[wIdx].company = e.target.value;
+                      updateField('cv_resume', 'workExperience', updated);
+                    }}
+                    placeholder="e.g. Google"
+                    className="w-full border border-slate-300 rounded p-1.5 text-xs bg-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Duration</label>
+                <input
+                  type="text"
+                  value={work.duration || ''}
+                  onChange={(e) => {
+                    const updated = structuredClone(workExperience);
+                    updated[wIdx].duration = e.target.value;
+                    updateField('cv_resume', 'workExperience', updated);
+                  }}
+                  placeholder="e.g. Jan 2023 - Present"
+                  className="w-full border border-slate-300 rounded p-1.5 text-xs bg-white"
+                />
+              </div>
+
+              {/* Bullets */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-[10px] font-semibold text-slate-500 uppercase">Key Achievements / Bullets</label>
+                  <button
+                    type="button"
+                    onClick={() => addCvWorkPoint(wIdx)}
+                    className="text-[11px] text-[#2C75FF] hover:underline flex items-center gap-0.5"
+                  >
+                    <Plus className="w-3 h-3" /> Add Bullet
+                  </button>
+                </div>
+                <div className="space-y-1.5">
+                  {(work.points || []).map((pt: string, pIdx: number) => (
+                    <div key={pIdx} className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={pt}
+                        onChange={(e) => {
+                          const updated = structuredClone(workExperience);
+                          updated[wIdx].points[pIdx] = e.target.value;
+                          updateField('cv_resume', 'workExperience', updated);
+                        }}
+                        placeholder="Bullet point accomplishment..."
+                        className="flex-1 border border-slate-300 rounded p-1.5 text-xs bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeCvWorkPoint(wIdx, pIdx)}
+                        className="text-slate-400 hover:text-red-500 p-1"
+                        title="Delete bullet"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* EDUCATION (ADD / REMOVE CONTENT) */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <SectionHeader number="05" title="Education" />
+          <button
+            type="button"
+            onClick={addCvEducation}
+            className="px-2.5 py-1 bg-blue-50 text-[#2C75FF] hover:bg-blue-100 rounded text-xs font-medium border border-blue-200 flex items-center gap-1 transition-colors"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add Education
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {education.map((edu: any, eIdx: number) => (
+            <div key={eIdx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative group">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-700">Education #{eIdx + 1}</span>
+                <button
+                  type="button"
+                  onClick={() => removeCvEducation(eIdx)}
+                  className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 text-xs flex items-center gap-1"
+                  title="Remove Education"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Remove</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Degree / Course</label>
+                  <input
+                    type="text"
+                    value={edu.degree || ''}
+                    onChange={(e) => {
+                      const updated = structuredClone(education);
+                      updated[eIdx].degree = e.target.value;
+                      updateField('cv_resume', 'education', updated);
+                    }}
+                    placeholder="e.g. B.Tech Mechanical"
+                    className="w-full border border-slate-300 rounded p-1.5 text-xs bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Institution</label>
+                  <input
+                    type="text"
+                    value={edu.institution || ''}
+                    onChange={(e) => {
+                      const updated = structuredClone(education);
+                      updated[eIdx].institution = e.target.value;
+                      updateField('cv_resume', 'education', updated);
+                    }}
+                    placeholder="e.g. JNTU Hyderabad"
+                    className="w-full border border-slate-300 rounded p-1.5 text-xs bg-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase mb-1">Duration</label>
+                <input
+                  type="text"
+                  value={edu.duration || ''}
+                  onChange={(e) => {
+                    const updated = structuredClone(education);
+                    updated[eIdx].duration = e.target.value;
+                    updateField('cv_resume', 'education', updated);
+                  }}
+                  placeholder="e.g. 2016 - 2020"
+                  className="w-full border border-slate-300 rounded p-1.5 text-xs bg-white"
+                />
+              </div>
+
+              {/* Details */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-[10px] font-semibold text-slate-500 uppercase">Details / Marks</label>
+                  <button
+                    type="button"
+                    onClick={() => addCvEducationDetail(eIdx)}
+                    className="text-[11px] text-[#2C75FF] hover:underline flex items-center gap-0.5"
+                  >
+                    <Plus className="w-3 h-3" /> Add Detail
+                  </button>
+                </div>
+                <div className="space-y-1.5">
+                  {(edu.details || []).map((det: string, dIdx: number) => (
+                    <div key={dIdx} className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={det}
+                        onChange={(e) => {
+                          const updated = structuredClone(education);
+                          updated[eIdx].details[dIdx] = e.target.value;
+                          updateField('cv_resume', 'education', updated);
+                        }}
+                        placeholder="Academic detail or GPA..."
+                        className="flex-1 border border-slate-300 rounded p-1.5 text-xs bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeCvEducationDetail(eIdx, dIdx)}
+                        className="text-slate-400 hover:text-red-500 p-1"
+                        title="Delete detail"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* SKILLS & EXTRA */}
+      <div>
+        <SectionHeader number="06" title="Skills & Additional Information" />
         <InputField label="Technical Skills" name="additionalInfo.technicalSkills" as="textarea" register={register} />
         <InputField label="Languages" name="additionalInfo.languages" register={register} />
         <InputField label="Certifications" name="additionalInfo.certifications" register={register} />
@@ -983,24 +1241,20 @@ const CvResumeForm = () => {
 
 // Government Identity Card Form
 const IdentityCardForm = () => {
-  const { data, updateData, updateField } = useDocumentStore();
+  const {
+    data,
+    updateData,
+    updateField,
+    activeIdCardType,
+    setActiveIdCardType,
+    idCardSide,
+    setIdCardSide,
+  } = useDocumentStore();
   const photoInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
-  const { register, watch, reset } = useForm({
-    defaultValues: data.identity_card,
-  });
-
-  useEffect(() => {
-    reset(data.identity_card);
-  }, [data.identity_card, reset]);
-
-  useEffect(() => {
-    const subscription = watch((value) => {
-      updateData('identity_card', { ...data.identity_card, ...value });
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, updateData, data.identity_card]);
+  const idCardData = data.identity_card || {};
+  const currentCard = (idCardData.cards && idCardData.cards[activeIdCardType]) || idCardData.front || {};
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1010,6 +1264,11 @@ const IdentityCardForm = () => {
       const base64 = event.target?.result as string;
       if (base64) {
         updateField('identity_card', 'photo', base64);
+        if (idCardData.cards && idCardData.cards[activeIdCardType]) {
+          const cardsClone = structuredClone(idCardData.cards);
+          cardsClone[activeIdCardType].photo = base64;
+          updateField('identity_card', 'cards', cardsClone);
+        }
       }
     };
     reader.readAsDataURL(file);
@@ -1023,15 +1282,84 @@ const IdentityCardForm = () => {
       const base64 = event.target?.result as string;
       if (base64) {
         updateField('identity_card', 'logo', base64);
+        if (idCardData.cards && idCardData.cards[activeIdCardType]) {
+          const cardsClone = structuredClone(idCardData.cards);
+          cardsClone[activeIdCardType].logo = base64;
+          updateField('identity_card', 'cards', cardsClone);
+        }
       }
     };
     reader.readAsDataURL(file);
   };
 
+  const cardTypes = [
+    { id: 'govt_id', label: 'Telangana Govt ID' },
+    { id: 'aadhaar', label: 'Aadhaar Card' },
+    { id: 'pan', label: 'PAN Card' },
+    { id: 'voter', label: 'Voter ID' },
+    { id: 'driving', label: 'Driving Licence' },
+  ];
+
+  const updateCardProperty = (field: string, val: string) => {
+    updateField('identity_card', field, val);
+    if (idCardData.cards && idCardData.cards[activeIdCardType]) {
+      const cardsClone = structuredClone(idCardData.cards);
+      cardsClone[activeIdCardType][field] = val;
+      updateField('identity_card', 'cards', cardsClone);
+    }
+  };
+
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      {/* CARD TYPE SELECTOR */}
       <div>
-        <SectionHeader number="01" title="Card Photos & Emblem" />
+        <SectionHeader number="01" title="Card Type & Format" />
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5">Select Card Type</label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {cardTypes.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setActiveIdCardType(c.id)}
+                  className={`p-2 text-xs font-medium rounded-lg border text-left transition-all ${
+                    activeIdCardType === c.id
+                      ? 'bg-blue-50 border-[#2C75FF] text-[#2C75FF] font-semibold'
+                      : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1.5">Print / Export Side</label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {(['front', 'back', 'both'] as const).map((side) => (
+                <button
+                  key={side}
+                  type="button"
+                  onClick={() => setIdCardSide(side)}
+                  className={`py-1.5 text-xs font-medium rounded-lg border capitalize transition-all ${
+                    idCardSide === side
+                      ? 'bg-[#0A0A0A] text-white border-[#0A0A0A]'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  {side === 'both' ? 'Both (Side-by-Side)' : side}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* CARD PHOTOS & EMBLEM */}
+      <div>
+        <SectionHeader number="02" title="Photos & Government Emblem" />
         <input
           type="file"
           ref={photoInputRef}
@@ -1051,8 +1379,12 @@ const IdentityCardForm = () => {
           <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
             <div className="flex items-center gap-3">
               <div className="w-12 h-14 rounded border border-slate-300 overflow-hidden bg-white flex-shrink-0">
-                {data.identity_card.photo ? (
-                  <img src={data.identity_card.photo} alt="Photo" className="w-full h-full object-cover" />
+                {currentCard.photo || idCardData.photo ? (
+                  <img
+                    src={currentCard.photo || idCardData.photo}
+                    alt="Photo"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400">
                     <Camera className="w-5 h-5" />
@@ -1060,8 +1392,8 @@ const IdentityCardForm = () => {
                 )}
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-800">Holder ID Photo</div>
-                <div className="text-[11px] text-slate-500">Official portrait image</div>
+                <div className="text-xs font-semibold text-slate-800">Cardholder Photo</div>
+                <div className="text-[11px] text-slate-500">Official photo portrait</div>
               </div>
             </div>
             <button
@@ -1070,15 +1402,19 @@ const IdentityCardForm = () => {
               className="px-3 py-1.5 bg-[#2C75FF] hover:bg-blue-600 text-white rounded text-xs font-medium shadow-sm transition-colors flex items-center gap-1.5"
             >
               <Upload className="w-3.5 h-3.5" />
-              Upload Photo
+              Upload
             </button>
           </div>
 
           <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full border border-slate-300 overflow-hidden bg-white p-1 flex-shrink-0">
-                {data.identity_card.logo ? (
-                  <img src={data.identity_card.logo} alt="Emblem" className="w-full h-full object-contain" />
+                {currentCard.logo || idCardData.logo ? (
+                  <img
+                    src={currentCard.logo || idCardData.logo}
+                    alt="Emblem"
+                    className="w-full h-full object-contain"
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-400">
                     <Camera className="w-5 h-5" />
@@ -1086,8 +1422,8 @@ const IdentityCardForm = () => {
                 )}
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-800">State / Dept Emblem</div>
-                <div className="text-[11px] text-slate-500">Official seal or logo</div>
+                <div className="text-xs font-semibold text-slate-800">Emblem / Govt Logo</div>
+                <div className="text-[11px] text-slate-500">Official dept emblem</div>
               </div>
             </div>
             <button
@@ -1096,29 +1432,174 @@ const IdentityCardForm = () => {
               className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded text-xs font-medium shadow-sm transition-colors flex items-center gap-1.5"
             >
               <Upload className="w-3.5 h-3.5" />
-              Replace Logo
+              Replace
             </button>
           </div>
         </div>
       </div>
 
+      {/* FRONT SIDE DETAILS */}
       <div>
-        <SectionHeader number="02" title="Header & Department" />
-        <InputField label="Government Header" name="headerGovt" register={register} />
-        <InputField label="Department Name" name="headerDept" register={register} />
-        <InputField label="Card Title" name="cardTitle" register={register} />
+        <SectionHeader number="03" title="Front Side Details" />
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Header (Government)</label>
+            <input
+              type="text"
+              value={currentCard.headerGovt || idCardData.headerGovt || ''}
+              onChange={(e) => updateCardProperty('headerGovt', e.target.value)}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Department Name</label>
+            <input
+              type="text"
+              value={currentCard.headerDept || idCardData.headerDept || ''}
+              onChange={(e) => updateCardProperty('headerDept', e.target.value)}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Card Title</label>
+            <input
+              type="text"
+              value={currentCard.cardTitle || idCardData.cardTitle || ''}
+              onChange={(e) => updateCardProperty('cardTitle', e.target.value)}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Full Name</label>
+            <input
+              type="text"
+              value={currentCard.name || idCardData.name || ''}
+              onChange={(e) => updateCardProperty('name', e.target.value)}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Father's Name / Relative</label>
+            <input
+              type="text"
+              value={currentCard.fatherName || idCardData.fatherName || ''}
+              onChange={(e) => updateCardProperty('fatherName', e.target.value)}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Date of Birth</label>
+              <input
+                type="text"
+                value={currentCard.dob || idCardData.dob || ''}
+                onChange={(e) => updateCardProperty('dob', e.target.value)}
+                className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Designation / ID No</label>
+              <input
+                type="text"
+                value={currentCard.designation || currentCard.aadharNumber || currentCard.panNumber || idCardData.designation || ''}
+                onChange={(e) => updateCardProperty('designation', e.target.value)}
+                className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Place of Working / Issue</label>
+            <input
+              type="text"
+              value={currentCard.placeOfWorking || idCardData.placeOfWorking || ''}
+              onChange={(e) => updateCardProperty('placeOfWorking', e.target.value)}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Issuing Authority Signature</label>
+            <input
+              type="text"
+              value={currentCard.authorityTitle || idCardData.authorityTitle || ''}
+              onChange={(e) => updateCardProperty('authorityTitle', e.target.value)}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+            />
+          </div>
+        </div>
       </div>
 
+      {/* BACK SIDE DETAILS */}
       <div>
-        <SectionHeader number="03" title="Cardholder Details" />
-        <InputField label="Full Name" name="name" register={register} />
-        <InputField label="Father's Name" name="fatherName" register={register} />
-        <div className="grid grid-cols-2 gap-3">
-          <InputField label="Date of Birth" name="dob" register={register} />
-          <InputField label="Designation" name="designation" register={register} />
+        <SectionHeader number="04" title="Back Side Details" />
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Residential Address</label>
+            <textarea
+              rows={2}
+              value={idCardData.back?.address || currentCard.address || ''}
+              onChange={(e) => {
+                const backObj = structuredClone(idCardData.back || {});
+                backObj.address = e.target.value;
+                updateField('identity_card', 'back', backObj);
+              }}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Blood Group</label>
+              <input
+                type="text"
+                value={idCardData.back?.bloodGroup || 'O+ve'}
+                onChange={(e) => {
+                  const backObj = structuredClone(idCardData.back || {});
+                  backObj.bloodGroup = e.target.value;
+                  updateField('identity_card', 'back', backObj);
+                }}
+                className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Emergency Phone</label>
+              <input
+                type="text"
+                value={idCardData.back?.emergencyContact || ''}
+                onChange={(e) => {
+                  const backObj = structuredClone(idCardData.back || {});
+                  backObj.emergencyContact = e.target.value;
+                  updateField('identity_card', 'back', backObj);
+                }}
+                className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Barcode / Unique Number</label>
+            <input
+              type="text"
+              value={idCardData.back?.barcodeText || ''}
+              onChange={(e) => {
+                const backObj = structuredClone(idCardData.back || {});
+                backObj.barcodeText = e.target.value;
+                updateField('identity_card', 'back', backObj);
+              }}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Card Instructions</label>
+            <textarea
+              rows={2}
+              value={idCardData.back?.instructions || ''}
+              onChange={(e) => {
+                const backObj = structuredClone(idCardData.back || {});
+                backObj.instructions = e.target.value;
+                updateField('identity_card', 'back', backObj);
+              }}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+            />
+          </div>
         </div>
-        <InputField label="Place of Working" name="placeOfWorking" register={register} />
-        <InputField label="Issuing Authority Signature Text" name="authorityTitle" register={register} />
       </div>
     </div>
   );

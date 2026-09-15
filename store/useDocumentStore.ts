@@ -1,12 +1,20 @@
+import { PaperFormatId } from '@/lib/paper-formats';
 import { create } from 'zustand';
 
 export type TemplateType = 'rent_agreement' | 'affidavit' | 'sale_deed' | 'plot_agreement' | 'ssc_memo_affidavit' | 'cdma_death_correction' | 'lease_deed' | 'sbi_alias_general' | 'single_women_affidavit' | 'cv_resume' | 'identity_card';
 export type EditMode = 'form' | 'direct';
 
+export type IdCardSide = 'front' | 'back' | 'both';
+
 interface DocumentState {
   activeTemplate: TemplateType;
   editMode: EditMode;
+  paperFormat: PaperFormatId;
+  language: 'en' | 'te';
   zoom: number;
+  idCardSide: IdCardSide;
+  activeIdCardType: string;
+  directContent: Record<string, string>;
   data: {
     rent_agreement: any;
     affidavit: any;
@@ -22,9 +30,26 @@ interface DocumentState {
   };
   setActiveTemplate: (template: TemplateType) => void;
   setEditMode: (mode: EditMode) => void;
+  setPaperFormat: (format: PaperFormatId) => void;
+  setLanguage: (lang: 'en' | 'te') => void;
   setZoom: (zoom: number) => void;
+  setIdCardSide: (side: IdCardSide) => void;
+  setActiveIdCardType: (type: string) => void;
+  setDirectContent: (template: string, html: string) => void;
   updateData: (template: TemplateType, newData: any) => void;
   updateField: (template: TemplateType, fieldPath: string, value: any) => void;
+  addStatement: (template: TemplateType, statement?: string) => void;
+  removeStatement: (template: TemplateType, index: number) => void;
+  updateStatement: (template: TemplateType, index: number, value: string) => void;
+  resetSessionState: () => void;
+  addCvWorkExperience: () => void;
+  removeCvWorkExperience: (index: number) => void;
+  addCvWorkPoint: (workIndex: number, point?: string) => void;
+  removeCvWorkPoint: (workIndex: number, pointIndex: number) => void;
+  addCvEducation: () => void;
+  removeCvEducation: (index: number) => void;
+  addCvEducationDetail: (eduIndex: number, detail?: string) => void;
+  removeCvEducationDetail: (eduIndex: number, detailIndex: number) => void;
 }
 
 const initialRentAgreement = {
@@ -417,23 +442,246 @@ const initialCvResume = {
 };
 
 const initialIdentityCard = {
-  photo: '/assets/default_id_photo.png',
-  logo: '/assets/telangana_logo.png',
-  headerGovt: 'GOVERNMENT OF TELANGANA STATE',
-  headerDept: 'PANCHAYATHRAJ DEPARTMENT',
-  cardTitle: 'IDENTITY CARD',
-  name: 'Pradhyumn Dhondi',
-  fatherName: 'Jagadeeshwar Dhondi',
-  dob: '30/08/2004',
-  designation: 'Secretary',
-  placeOfWorking: 'Armoor, 503224',
-  authorityTitle: 'MPDO, Aloor'
+  cardType: 'govt_id',
+  front: {
+    photo: '/assets/default_id_photo.png',
+    logo: '/assets/telangana_logo.png',
+    headerGovt: 'GOVERNMENT OF TELANGANA STATE',
+    headerDept: 'PANCHAYATHRAJ DEPARTMENT',
+    cardTitle: 'IDENTITY CARD',
+    name: 'Pradhyumn Dhondi',
+    fatherName: 'Jagadeeshwar Dhondi',
+    dob: '30/08/2004',
+    designation: 'Secretary',
+    placeOfWorking: 'Armoor, 503224',
+    authorityTitle: 'MPDO, Aloor',
+  },
+  back: {
+    address: 'H.No. 4-82, Main Road, Armoor, Nizamabad Dist, Telangana - 503224',
+    bloodGroup: 'O+ve',
+    emergencyContact: '+91 98765 43210',
+    instructions: '1. This card is property of the Govt. of Telangana.\n2. If found, please return to the issuing authority.\n3. Tampering with this card is a punishable offense.',
+    issuingOffice: 'Office of the Mandal Parishad Development Officer, Aloor',
+    barcodeText: 'TS-PRD-2024-0089',
+    backPhoto: '',
+  },
+  // Multi-card profiles
+  cards: {
+    govt_id: {
+      name: 'Pradhyumn Dhondi',
+      fatherName: 'Jagadeeshwar Dhondi',
+      dob: '30/08/2004',
+      designation: 'Secretary',
+      placeOfWorking: 'Armoor, 503224',
+      authorityTitle: 'MPDO, Aloor',
+      photo: '/assets/default_id_photo.png',
+      logo: '/assets/telangana_logo.png',
+      headerGovt: 'GOVERNMENT OF TELANGANA STATE',
+      headerDept: 'PANCHAYATHRAJ DEPARTMENT',
+      cardTitle: 'IDENTITY CARD',
+      address: 'H.No. 4-82, Main Road, Armoor, Nizamabad Dist - 503224',
+      idNumber: 'TS/PRD/SEC/084',
+    },
+    aadhaar: {
+      name: 'Pradhyumn Dhondi',
+      dob: '30/08/2004',
+      gender: 'MALE',
+      aadharNumber: '6469 4213 5938',
+      photo: '/assets/default_id_photo.png',
+      logo: '/assets/telangana_logo.png',
+      address: 'S/O Jagadeeshwar Dhondi, 4-82, Main Bazar, Armoor, Nizamabad, Telangana - 503224',
+      headerGovt: 'GOVERNMENT OF INDIA',
+      headerDept: 'UNIQUE IDENTIFICATION AUTHORITY OF INDIA',
+      cardTitle: 'AADHAAR CARD',
+    },
+    pan: {
+      name: 'PRADHYUMN DHONDI',
+      fatherName: 'JAGADEESHWAR DHONDI',
+      dob: '30/08/2004',
+      panNumber: 'ABCDE1234F',
+      photo: '/assets/default_id_photo.png',
+      logo: '/assets/telangana_logo.png',
+      headerGovt: 'INCOME TAX DEPARTMENT',
+      headerDept: 'GOVT. OF INDIA',
+      cardTitle: 'PERMANENT ACCOUNT NUMBER CARD',
+    },
+    voter: {
+      name: 'Pradhyumn Dhondi',
+      fatherName: 'Jagadeeshwar Dhondi',
+      gender: 'MALE',
+      epicNumber: 'TSZ1234567',
+      photo: '/assets/default_id_photo.png',
+      logo: '/assets/telangana_logo.png',
+      headerGovt: 'ELECTION COMMISSION OF INDIA',
+      headerDept: 'ELECTOR PHOTO IDENTITY CARD',
+      cardTitle: 'VOTER ID CARD',
+      address: 'H.No 4-82, Armoor, Nizamabad - 503224',
+    },
+    driving: {
+      name: 'PRADHYUMN DHONDI',
+      fatherName: 'JAGADEESHWAR DHONDI',
+      dob: '30/08/2004',
+      dlNumber: 'TS-16 20220008456',
+      validTill: '29/08/2044',
+      vehicleClass: 'MCWG, LMV',
+      photo: '/assets/default_id_photo.png',
+      logo: '/assets/telangana_logo.png',
+      headerGovt: 'TELANGANA TRANSPORT DEPARTMENT',
+      headerDept: 'UNION OF INDIA',
+      cardTitle: 'DRIVING LICENCE',
+      address: 'Armoor, Nizamabad, Telangana - 503224',
+    }
+  }
 };
 
 export const useDocumentStore = create<DocumentState>((set) => ({
   activeTemplate: 'rent_agreement',
   editMode: 'form',
+  paperFormat: 'a4',
+  language: 'en',
   zoom: 100,
+  idCardSide: 'both',
+  activeIdCardType: 'govt_id',
+  directContent: {},
+  setPaperFormat: (format) => set({ paperFormat: format }),
+  setLanguage: (lang) => set({ language: lang }),
+  setIdCardSide: (side) => set({ idCardSide: side }),
+  setActiveIdCardType: (type) => set({ activeIdCardType: type }),
+  setDirectContent: (template, html) =>
+    set((state) => ({
+      directContent: {
+        ...state.directContent,
+        [template]: html,
+      },
+    })),
+  addStatement: (template, statement = 'I state that the above declaration is true and verified.') =>
+    set((state) => {
+      const targetData = structuredClone(state.data[template]);
+      if (!Array.isArray(targetData.statements)) {
+        targetData.statements = [];
+      }
+      targetData.statements.push(statement);
+      return {
+        data: {
+          ...state.data,
+          [template]: targetData,
+        },
+      };
+    }),
+  removeStatement: (template, index) =>
+    set((state) => {
+      const targetData = structuredClone(state.data[template]);
+      if (Array.isArray(targetData.statements)) {
+        targetData.statements.splice(index, 1);
+      }
+      return {
+        data: {
+          ...state.data,
+          [template]: targetData,
+        },
+      };
+    }),
+  updateStatement: (template, index, value) =>
+    set((state) => {
+      const targetData = structuredClone(state.data[template]);
+      if (Array.isArray(targetData.statements) && targetData.statements[index] !== undefined) {
+        targetData.statements[index] = value;
+      }
+      return {
+        data: {
+          ...state.data,
+          [template]: targetData,
+        },
+      };
+    }),
+  resetSessionState: () =>
+    set({
+      editMode: 'form',
+      paperFormat: 'a4',
+      language: 'en',
+      zoom: 100,
+      idCardSide: 'both',
+      activeIdCardType: 'govt_id',
+      directContent: {},
+    }),
+  addCvWorkExperience: () =>
+    set((state) => {
+      const cv = structuredClone(state.data.cv_resume);
+      if (!Array.isArray(cv.workExperience)) cv.workExperience = [];
+      cv.workExperience.push({
+        role: 'Job Role / Title',
+        company: 'Organization Name',
+        duration: 'Jan 2024 - Present',
+        points: ['Accomplished key milestones and deliverables.'],
+      });
+      return { data: { ...state.data, cv_resume: cv } };
+    }),
+  removeCvWorkExperience: (index) =>
+    set((state) => {
+      const cv = structuredClone(state.data.cv_resume);
+      if (Array.isArray(cv.workExperience)) {
+        cv.workExperience.splice(index, 1);
+      }
+      return { data: { ...state.data, cv_resume: cv } };
+    }),
+  addCvWorkPoint: (workIndex, point = 'Contributed to project delivery.') =>
+    set((state) => {
+      const cv = structuredClone(state.data.cv_resume);
+      if (cv.workExperience && cv.workExperience[workIndex]) {
+        if (!Array.isArray(cv.workExperience[workIndex].points)) {
+          cv.workExperience[workIndex].points = [];
+        }
+        cv.workExperience[workIndex].points.push(point);
+      }
+      return { data: { ...state.data, cv_resume: cv } };
+    }),
+  removeCvWorkPoint: (workIndex, pointIndex) =>
+    set((state) => {
+      const cv = structuredClone(state.data.cv_resume);
+      if (cv.workExperience && cv.workExperience[workIndex] && Array.isArray(cv.workExperience[workIndex].points)) {
+        cv.workExperience[workIndex].points.splice(pointIndex, 1);
+      }
+      return { data: { ...state.data, cv_resume: cv } };
+    }),
+  addCvEducation: () =>
+    set((state) => {
+      const cv = structuredClone(state.data.cv_resume);
+      if (!Array.isArray(cv.education)) cv.education = [];
+      cv.education.push({
+        degree: 'Degree / Certificate',
+        institution: 'Institution / College',
+        duration: '2020 - 2024',
+        details: ['Passed with distinction / high GPA.'],
+      });
+      return { data: { ...state.data, cv_resume: cv } };
+    }),
+  removeCvEducation: (index) =>
+    set((state) => {
+      const cv = structuredClone(state.data.cv_resume);
+      if (Array.isArray(cv.education)) {
+        cv.education.splice(index, 1);
+      }
+      return { data: { ...state.data, cv_resume: cv } };
+    }),
+  addCvEducationDetail: (eduIndex, detail = 'Relevant academic coursework.') =>
+    set((state) => {
+      const cv = structuredClone(state.data.cv_resume);
+      if (cv.education && cv.education[eduIndex]) {
+        if (!Array.isArray(cv.education[eduIndex].details)) {
+          cv.education[eduIndex].details = [];
+        }
+        cv.education[eduIndex].details.push(detail);
+      }
+      return { data: { ...state.data, cv_resume: cv } };
+    }),
+  removeCvEducationDetail: (eduIndex, detailIndex) =>
+    set((state) => {
+      const cv = structuredClone(state.data.cv_resume);
+      if (cv.education && cv.education[eduIndex] && Array.isArray(cv.education[eduIndex].details)) {
+        cv.education[eduIndex].details.splice(detailIndex, 1);
+      }
+      return { data: { ...state.data, cv_resume: cv } };
+    }),
   data: {
     rent_agreement: initialRentAgreement,
     affidavit: initialAffidavit,
