@@ -194,7 +194,7 @@ export default function RootDashboard() {
   const [selectedSystem, setSelectedSystem] = useState('System 1');
   const [selectedOperatorId, setSelectedOperatorId] = useState('1');
 
-  // Navigation tab
+  // Navigation ta
   const [activeTab, setActiveTab] = useState<'files' | 'orders'>('files');
 
   // Files View Controls
