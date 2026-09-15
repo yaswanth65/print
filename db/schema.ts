@@ -1,74 +1,26 @@
-import { pgTable, uuid, varchar, jsonb, timestamp, integer, text, pgEnum, date } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, integer, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 
-export const documentStatusEnum = pgEnum('document_status', ['PENDING_PAYMENT', 'PAID']);
-export const entryTypeEnum = pgEnum('entry_type', ['DOCUMENT_PAYMENT', 'MANUAL_CASH_ADDITION']);
-export const paymentMethodEnum = pgEnum('payment_method', ['CASH', 'UPI']);
-export const userRoleEnum = pgEnum('user_role', ['ADMIN', 'MANAGER', 'OPERATOR']);
-export const attendanceStatusEnum = pgEnum('attendance_status', ['PRESENT', 'ABSENT', 'HALF_DAY']);
-
-export const documents = pgTable('documents', {
+export const workOrders = pgTable('work_orders', {
   id: uuid('id').primaryKey().defaultRandom(),
+  wo_number: varchar('wo_number', { length: 50 }).notNull().unique(),
   customer_name: varchar('customer_name', { length: 255 }).notNull(),
-  document_title: varchar('document_title', { length: 255 }).notNull(),
-  template_type: varchar('template_type', { length: 255 }),
-  template_data: jsonb('template_data'),
-  bill_amount: integer('bill_amount'),
-  status: documentStatusEnum('status').default('PENDING_PAYMENT').notNull(),
-  created_by: uuid('created_by'),
-  printed_at: timestamp('printed_at').defaultNow(),
+  customer_contact: varchar('customer_contact', { length: 50 }).notNull(),
+  document_type: varchar('document_type', { length: 100 }).notNull(),
+  wo_amount: integer('wo_amount').notNull().default(0),
+  amount_paid: integer('amount_paid').notNull().default(0),
+  amount_due: integer('amount_due').notNull().default(0),
+  due_date: varchar('due_date', { length: 50 }),
+  status: varchar('status', { length: 50 }).notNull().default('Pending'),
+  internal_notes: text('internal_notes'),
+  created_by: varchar('created_by', { length: 100 }),
+  system_name: varchar('system_name', { length: 50 }),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
 
-export const formTemplates = pgTable('form_templates', {
+export const operators = pgTable('operators', {
   id: uuid('id').primaryKey().defaultRandom(),
-  title: varchar('title', { length: 255 }).notNull(),
-  source_type: varchar('source_type', { length: 32 }),
-  original_filename: varchar('original_filename', { length: 512 }),
-  file_path: varchar('file_path', { length: 1024 }),
-  extracted_text: text('extracted_text'),
-  template_def: jsonb('template_def'),
-  status: varchar('status', { length: 32 }).default('DRAFT').notNull(),
-  created_by: uuid('created_by'),
-  created_at: timestamp('created_at').defaultNow(),
-  updated_at: timestamp('updated_at'),
-});
-
-export const transactions = pgTable('transactions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  document_id: uuid('document_id'),
-  customer_name: varchar('customer_name', { length: 255 }),
-  document_title: varchar('document_title', { length: 255 }),
-  entry_type: entryTypeEnum('entry_type').notNull(),
-  payment_method: paymentMethodEnum('payment_method'),
-  bill_amount: integer('bill_amount'),
-  received_amount: integer('received_amount'),
-  change_amount: integer('change_amount'),
-  amount_collected: integer('amount_collected').notNull(),
-  notes: text('notes'),
-  created_at: timestamp('created_at').defaultNow(),
-  created_by: uuid('created_by'),
-});
-
-export const counter_cash_entries = pgTable('counter_cash_entries', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  amount: integer('amount').notNull(),
-  reason: varchar('reason', { length: 255 }),
-  notes: text('notes'),
-  created_at: timestamp('created_at').defaultNow(),
-  created_by: uuid('created_by'),
-});
-
-export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: varchar('name', { length: 255 }).notNull(),
-  phone: varchar('phone', { length: 20 }),
-  active: varchar('active', { length: 5 }).default('true'),
-  role: userRoleEnum('role').notNull(),
-});
-
-export const attendance = pgTable('attendance', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  user_id: uuid('user_id').notNull(),
-  date: date('date').notNull(),
-  status: attendanceStatusEnum('status').notNull(),
-  created_at: timestamp('created_at').defaultNow(),
+  name: varchar('name', { length: 100 }).notNull(),
+  system_name: varchar('system_name', { length: 50 }).notNull(),
+  active: boolean('active').default(true),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });

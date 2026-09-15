@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import type { FormTemplateMeta, TemplateDef, AnyTemplateDef } from '@/lib/types';
 
 export type TemplateType = 'rent_agreement' | 'affidavit' | 'sale_deed' | 'plot_agreement' | 'ssc_memo_affidavit' | 'cdma_death_correction' | 'lease_deed' | 'sbi_alias_general' | 'single_women_affidavit';
 export type EditMode = 'form' | 'direct';
@@ -24,17 +23,6 @@ interface DocumentState {
   setZoom: (zoom: number) => void;
   updateData: (template: TemplateType, newData: any) => void;
   updateField: (template: TemplateType, fieldPath: string, value: any) => void;
-
-  // Uploaded (dynamic) form templates
-  forms: FormTemplateMeta[];
-  activeFormId: string | null;
-  formDefs: Record<string, AnyTemplateDef>;
-  formValues: Record<string, Record<string, string>>;
-  setForms: (forms: FormTemplateMeta[]) => void;
-  setActiveForm: (id: string | null) => void;
-  setFormDef: (formId: string, def: AnyTemplateDef) => void;
-  setFormValues: (formId: string, values: Record<string, string>) => void;
-  setFormValue: (formId: string, key: string, value: string) => void;
 }
 
 const initialRentAgreement = {
@@ -374,11 +362,7 @@ export const useDocumentStore = create<DocumentState>((set) => ({
     sbi_alias_general: initialSbiAliasGeneral,
     single_women_affidavit: initialSingleWomenAffidavit,
   },
-  forms: [],
-  activeFormId: null,
-  formDefs: {},
-  formValues: {},
-  setActiveTemplate: (template) => set({ activeTemplate: template, activeFormId: null }),
+  setActiveTemplate: (template) => set({ activeTemplate: template }),
   setEditMode: (mode) => set({ editMode: mode }),
   setZoom: (zoom) => set({ zoom }),
   updateData: (template, newData) =>
@@ -415,24 +399,4 @@ export const useDocumentStore = create<DocumentState>((set) => ({
         }
       };
     }),
-  setForms: (forms) => set({ forms }),
-  setActiveForm: (activeFormId) => set({ activeFormId }),
-  setFormDef: (formId, def) =>
-    set((state) => ({
-      formDefs: { ...state.formDefs, [formId]: def },
-    })),
-  setFormValues: (formId, values) =>
-    set((state) => ({
-      formValues: { ...state.formValues, [formId]: values },
-    })),
-  setFormValue: (formId, key, value) =>
-    set((state) => ({
-      formValues: {
-        ...state.formValues,
-        [formId]: {
-          ...(state.formValues[formId] ?? {}),
-          [key]: value,
-        },
-      },
-    })),
 }));

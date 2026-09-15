@@ -1,7 +1,6 @@
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { useForm } from 'react-hook-form';
 import { useEffect } from 'react';
-import { DynamicForm } from '@/components/dynamic/DynamicForm';
 
 // Common Input Component
 const InputField = ({ label, register, name, placeholder = '', type = 'text', as = 'input' }: any) => {
@@ -887,21 +886,7 @@ const SingleWomenAffidavitForm = () => {
 };
 
 export const EditorPanel = () => {
-  const { activeTemplate, editMode, activeFormId } = useDocumentStore();
-
-  if (editMode === 'direct') {
-    return (
-      <aside className="w-full h-full bg-white flex flex-col items-center justify-center text-center text-slate-500 p-8">
-        <div className="p-6 max-w-sm">
-          <svg className="w-12 h-12 mx-auto mb-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-          </svg>
-          <h3 className="text-sm font-semibold text-slate-800 mb-2">Direct Edit Mode Active</h3>
-          <p className="text-xs text-slate-500 leading-relaxed">You are directly editing the document on the right side. Form inputs are disabled in this mode to prevent conflicts.</p>
-        </div>
-      </aside>
-    );
-  }
+  const { activeTemplate } = useDocumentStore();
 
   return (
     <aside className="h-full bg-white flex flex-col print:hidden flex-1 overflow-hidden">
@@ -909,21 +894,15 @@ export const EditorPanel = () => {
         <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400">Document Data</h2>
       </div>
       
-      {activeFormId ? (
-        <DynamicForm formId={activeFormId} />
-      ) : (
-        <>
-          {activeTemplate === 'rent_agreement' && <RentAgreementForm />}
-          {activeTemplate === 'affidavit' && <AffidavitForm />}
-          {activeTemplate === 'sale_deed' && <SaleDeedForm />}
-          {activeTemplate === 'plot_agreement' && <PlotAgreementForm />}
-          {activeTemplate === 'ssc_memo_affidavit' && <SscMemoAffidavitForm />}
-          {activeTemplate === 'cdma_death_correction' && <CdmaDeathCorrectionForm />}
-          {activeTemplate === 'lease_deed' && <LeaseDeedForm />}
-          {activeTemplate === 'sbi_alias_general' && <SbiAliasGeneralForm />}
-          {activeTemplate === 'single_women_affidavit' && <SingleWomenAffidavitForm />}
-        </>
-      )}
+      {activeTemplate === 'rent_agreement' && <RentAgreementForm />}
+      {activeTemplate === 'affidavit' && <AffidavitForm />}
+      {activeTemplate === 'sale_deed' && <SaleDeedForm />}
+      {activeTemplate === 'plot_agreement' && <PlotAgreementForm />}
+      {activeTemplate === 'ssc_memo_affidavit' && <SscMemoAffidavitForm />}
+      {activeTemplate === 'cdma_death_correction' && <CdmaDeathCorrectionForm />}
+      {activeTemplate === 'lease_deed' && <LeaseDeedForm />}
+      {activeTemplate === 'sbi_alias_general' && <SbiAliasGeneralForm />}
+      {activeTemplate === 'single_women_affidavit' && <SingleWomenAffidavitForm />}
 
       <div className="p-3 border-t border-slate-100 bg-slate-50 flex-shrink-0">
         <p className="text-[10px] text-slate-400 text-center italic">Auto-saving local changes...</p>
