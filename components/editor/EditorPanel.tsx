@@ -1,6 +1,7 @@
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { useForm } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { Camera, Upload } from 'lucide-react';
 
 // Common Input Component
 const InputField = ({ label, register, name, placeholder = '', type = 'text', as = 'input' }: any) => {
@@ -885,6 +886,244 @@ const SingleWomenAffidavitForm = () => {
   );
 };
 
+
+// CV / Resume Form
+const CvResumeForm = () => {
+  const { data, updateData, updateField } = useDocumentStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { register, watch, reset } = useForm({
+    defaultValues: data.cv_resume,
+  });
+
+  useEffect(() => {
+    reset(data.cv_resume);
+  }, [data.cv_resume, reset]);
+
+  useEffect(() => {
+    const subscription = watch((value) => {
+      updateData('cv_resume', { ...data.cv_resume, ...value });
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, updateData, data.cv_resume]);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        updateField('cv_resume', 'photo', base64);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div>
+        <SectionHeader number="01" title="Candidate Photo" />
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          className="hidden"
+          onChange={handlePhotoUpload}
+        />
+        <div className="flex items-center gap-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+          <div className="w-16 h-18 rounded border border-slate-300 overflow-hidden bg-white flex-shrink-0">
+            {data.cv_resume.photo ? (
+              <img src={data.cv_resume.photo} alt="Photo" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-400">
+                <Camera className="w-6 h-6" />
+              </div>
+            )}
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 bg-[#2C75FF] hover:bg-blue-600 text-white rounded text-xs font-medium shadow-sm transition-colors flex items-center gap-1.5"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Upload / Replace Photo
+            </button>
+            <p className="text-[11px] text-slate-500 mt-1">Supports PNG, JPG, JPEG</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="02" title="Contact & Header" />
+        <InputField label="Full Name" name="fullName" register={register} />
+        <InputField label="Address" name="address" register={register} />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Phone" name="phone" register={register} />
+          <InputField label="Email" name="email" register={register} />
+        </div>
+        <InputField label="Website / Portfolio" name="website" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="03" title="Professional Summary" />
+        <InputField label="Summary" name="summary" as="textarea" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="04" title="Skills & Additional Information" />
+        <InputField label="Technical Skills" name="additionalInfo.technicalSkills" as="textarea" register={register} />
+        <InputField label="Languages" name="additionalInfo.languages" register={register} />
+        <InputField label="Certifications" name="additionalInfo.certifications" register={register} />
+        <InputField label="Awards & Activities" name="additionalInfo.awards" as="textarea" register={register} />
+      </div>
+    </div>
+  );
+};
+
+// Government Identity Card Form
+const IdentityCardForm = () => {
+  const { data, updateData, updateField } = useDocumentStore();
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const { register, watch, reset } = useForm({
+    defaultValues: data.identity_card,
+  });
+
+  useEffect(() => {
+    reset(data.identity_card);
+  }, [data.identity_card, reset]);
+
+  useEffect(() => {
+    const subscription = watch((value) => {
+      updateData('identity_card', { ...data.identity_card, ...value });
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, updateData, data.identity_card]);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        updateField('identity_card', 'photo', base64);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      if (base64) {
+        updateField('identity_card', 'logo', base64);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div>
+        <SectionHeader number="01" title="Card Photos & Emblem" />
+        <input
+          type="file"
+          ref={photoInputRef}
+          accept="image/*"
+          className="hidden"
+          onChange={handlePhotoUpload}
+        />
+        <input
+          type="file"
+          ref={logoInputRef}
+          accept="image/*"
+          className="hidden"
+          onChange={handleLogoUpload}
+        />
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-14 rounded border border-slate-300 overflow-hidden bg-white flex-shrink-0">
+                {data.identity_card.photo ? (
+                  <img src={data.identity_card.photo} alt="Photo" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-400">
+                    <Camera className="w-5 h-5" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <div className="text-xs font-semibold text-slate-800">Holder ID Photo</div>
+                <div className="text-[11px] text-slate-500">Official portrait image</div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              className="px-3 py-1.5 bg-[#2C75FF] hover:bg-blue-600 text-white rounded text-xs font-medium shadow-sm transition-colors flex items-center gap-1.5"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Upload Photo
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full border border-slate-300 overflow-hidden bg-white p-1 flex-shrink-0">
+                {data.identity_card.logo ? (
+                  <img src={data.identity_card.logo} alt="Emblem" className="w-full h-full object-contain" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-400">
+                    <Camera className="w-5 h-5" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <div className="text-xs font-semibold text-slate-800">State / Dept Emblem</div>
+                <div className="text-[11px] text-slate-500">Official seal or logo</div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => logoInputRef.current?.click()}
+              className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded text-xs font-medium shadow-sm transition-colors flex items-center gap-1.5"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Replace Logo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="02" title="Header & Department" />
+        <InputField label="Government Header" name="headerGovt" register={register} />
+        <InputField label="Department Name" name="headerDept" register={register} />
+        <InputField label="Card Title" name="cardTitle" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="03" title="Cardholder Details" />
+        <InputField label="Full Name" name="name" register={register} />
+        <InputField label="Father's Name" name="fatherName" register={register} />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Date of Birth" name="dob" register={register} />
+          <InputField label="Designation" name="designation" register={register} />
+        </div>
+        <InputField label="Place of Working" name="placeOfWorking" register={register} />
+        <InputField label="Issuing Authority Signature Text" name="authorityTitle" register={register} />
+      </div>
+    </div>
+  );
+};
+
 export const EditorPanel = () => {
   const { activeTemplate } = useDocumentStore();
 
@@ -903,6 +1142,8 @@ export const EditorPanel = () => {
       {activeTemplate === 'lease_deed' && <LeaseDeedForm />}
       {activeTemplate === 'sbi_alias_general' && <SbiAliasGeneralForm />}
       {activeTemplate === 'single_women_affidavit' && <SingleWomenAffidavitForm />}
+      {activeTemplate === 'cv_resume' && <CvResumeForm />}
+      {activeTemplate === 'identity_card' && <IdentityCardForm />}
 
       <div className="p-3 border-t border-slate-100 bg-slate-50 flex-shrink-0">
         <p className="text-[10px] text-slate-400 text-center italic">Auto-saving local changes...</p>

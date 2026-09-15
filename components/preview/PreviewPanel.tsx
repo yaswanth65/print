@@ -9,6 +9,8 @@ import { CdmaDeathCorrectionPreview } from '@/templates/cdmaDeathCorrection/Cdma
 import { LeaseDeedPreview } from '@/templates/leaseDeed/LeaseDeedPreview';
 import { SbiAliasGeneralPreview } from '@/templates/sbiAliasGeneral/SbiAliasGeneralPreview';
 import { SingleWomenAffidavitPreview } from '@/templates/singleWomenAffidavit/SingleWomenAffidavitPreview';
+import { CvResumePreview } from '@/templates/cvResume/CvResumePreview';
+import { IdentityCardPreview } from '@/templates/identityCard/IdentityCardPreview';
 
 export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
   const { activeTemplate, zoom } = useDocumentStore();
@@ -31,6 +33,8 @@ export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
           {activeTemplate === 'affidavit' && <AffidavitPreview />}
           {activeTemplate === 'sale_deed' && <SaleDeedPreview />}
           {activeTemplate === 'plot_agreement' && <PlotAgreementPreview />}
+          {activeTemplate === 'cv_resume' && <CvResumePreview />}
+          {activeTemplate === 'identity_card' && <IdentityCardPreview />}
         </div>
       </div>
     </main>

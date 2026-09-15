@@ -1,6 +1,6 @@
 # Template Creation & Modular Styling Architecture Guide
 
-This document serves as the standard operating procedure (SOP) and complete technical specification for adding new legal, government, and commercial document templates to the **Print Simulator** application.
+This document serves as the standard operating procedure (SOP) and complete technical specification for adding new legal, government, commercial, and photo-bearing document templates to the **Varma Xerox** application.
 
 ---
 
@@ -8,16 +8,26 @@ This document serves as the standard operating procedure (SOP) and complete tech
 
 1. **Modular CSS Per Document**:
    Every document template MUST reside in its own dedicated directory under `templates/<templateName>/` with its own isolated CSS module (`<templateName>.module.css`).
-   - Editing margins, font sizes, line heights, or stamp paper space in one document must **never** affect another document.
+   - Editing margins, font sizes, line heights, stamp paper space, or image frames in one document must **never** affect another document.
    - Never write document-specific layout rules inside global CSS (`globals.css`).
 
-2. **Native Dual Export**:
+2. **Native Dual Export & Print Fidelity**:
    Every template must support:
-   - **Pixel-Accurate Print / PDF**: Browser print dialog triggered via `react-to-print`, with print-specific media queries (`print:hidden`, `print:border-transparent`).
-   - **Native Word (`.docx`) Export**: Clean `.docx` generation using token replacement over the original skeleton XML via `/api/export-docx`.
+   - **Pixel-Accurate Print / PDF**: Browser print dialog triggered via `react-to-print`, with print-specific media queries (`print:hidden`, `print:border-transparent`, `print-color-adjust: exact`).
+   - **Native Word (`.docx`) Export**: Clean `.docx` generation using token replacement over the original skeleton XML via `/api/export-docx`, with XML character escaping (`&`, `<`, `>`, `"`, `'`).
 
 3. **Two-Way Data Sync**:
    All field inputs in the left-hand editor panel sync to the Zustand global store (`store/useDocumentStore.ts`), which automatically updates the live preview and enables direct inline editing via `<EditableField />`.
+
+4. **Multi-Asset & Photo Upload Support**:
+   Templates requiring photos (e.g. CV / Resume, ID Cards, Affidavits) support:
+   - Immediate base64 client-side file reading via `FileReader`.
+   - Direct click-to-upload overlays right on the document canvas and in the editor panel.
+   - Print-safe embedding with preservation of aspect ratios and print background colors.
+
+5. **Multi-Terminal Dashboard & Neon DB**:
+   - Work orders are recorded against the active terminal (`System 1` to `System 5`) and operator name.
+   - Templates listed in the store view automatically load into `/operator` with active template state initialized.
 
 ---
 
@@ -152,6 +162,9 @@ export const <TemplateName>Preview: React.FC = () => {
      | 'cdma_death_correction'
      | 'lease_deed'
      | 'sbi_alias_general'
+     | 'single_women_affidavit'
+     | 'cv_resume'
+     | 'identity_card'
      | '<templateKey>';
    ```
 2. **Add to `DocumentState.data` interface**:
@@ -173,9 +186,10 @@ export const <TemplateName>Preview: React.FC = () => {
 ### Step 4: Add Form Editor in `components/editor/EditorPanel.tsx`
 1. Create `<TemplateName>Form`:
    - Use `react-hook-form` initialized with `data.<templateKey>`.
-   - Use `watch()` and `useEffect()` to call `updateData('<templateKey>', JSON.parse(formValuesString))`.
+   - Use `watch()` and `useEffect()` to call `updateData('<templateKey>', { ...data.<templateKey>, ...value })`.
    - Group fields into logical sections using `<SectionHeader number="01" title="..." />`.
    - Use `<InputField />` helper for standard text/date inputs.
+   - If the template supports photo/emblem uploads, add an upload button with preview thumbnail and hidden file input.
 2. Add `<TemplateName>Form` to the `EditorPanel` switch:
    ```tsx
    {activeTemplate === '<templateKey>' && <<TemplateName>Form />}
@@ -196,21 +210,35 @@ export const <TemplateName>Preview: React.FC = () => {
 ---
 
 ### Step 6: Update Toolbar & Dropdown (`components/toolbar/Toolbar.tsx`)
-1. Add `<templateKey>` to `BUILTIN_TEMPLATE_TYPES`.
-2. Add an `<option>` inside the `<optgroup label="Built-in Templates">`:
-   ```tsx
-   <option value="<templateKey>">Human Readable Document Name</option>
+1. Add `<templateKey>` to `BUILTIN_TEMPLATE_TYPES`:
+   ```typescript
+   const BUILTIN_TEMPLATE_TYPES: { id: TemplateType; label: string }[] = [
+     { id: '<templateKey>', label: 'Human Readable Document Name' },
+     ...
+   ];
    ```
-3. Update the `exportDocx` function:
-   - Add `<templateKey>` to the supported templates condition.
-   - Set the downloaded file name:
-     ```tsx
-     else if (activeTemplate === '<templateKey>') fname = '<FILE_NAME>.docx';
-     ```
 
 ---
 
-### Step 7: Hook Up DOCX Export API Route (`app/api/export-docx/route.ts`)
+### Step 7: Update Dashboard Store Catalog (`app/page.tsx`)
+Add document metadata to `TEMPLATE_DOCUMENTS` in `app/page.tsx` so operators can access it from the root dashboard:
+```typescript
+{
+  id: '<templateKey>' as TemplateType,
+  name: 'Human Readable Document Name',
+  category: 'Category Group',
+  folder: 'Folder Group',
+  pages: '1 Page',
+  lastModified: '15 Sep, 2026',
+  icon: FileText,
+  badge: 'Photo Upload',
+  desc: 'Accurate description of the template purpose.',
+}
+```
+
+---
+
+### Step 8: Hook Up DOCX Export API Route (`app/api/export-docx/route.ts`)
 1. Inside `export-docx/route.ts`, handle `body.template === '<templateKey>'`:
    ```typescript
    if (body.template === '<templateKey>') {
@@ -220,9 +248,9 @@ export const <TemplateName>Preview: React.FC = () => {
      let xml = await zip.file('word/document.xml')!.async('string');
 
      const replaceMap: Record<string, string> = {
-       '{{applicantName}}': values.applicantName || '',
-       '{{aadharNumber}}': values.aadharNumber || '',
-       // Map all tokens to values...
+       '{{applicantName}}': escapeXml(values.applicantName || ''),
+       '{{aadharNumber}}': escapeXml(values.aadharNumber || ''),
+       // Map all tokens with escapeXml()...
      };
 
      for (const [k, v] of Object.entries(replaceMap)) {

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type TemplateType = 'rent_agreement' | 'affidavit' | 'sale_deed' | 'plot_agreement' | 'ssc_memo_affidavit' | 'cdma_death_correction' | 'lease_deed' | 'sbi_alias_general' | 'single_women_affidavit';
+export type TemplateType = 'rent_agreement' | 'affidavit' | 'sale_deed' | 'plot_agreement' | 'ssc_memo_affidavit' | 'cdma_death_correction' | 'lease_deed' | 'sbi_alias_general' | 'single_women_affidavit' | 'cv_resume' | 'identity_card';
 export type EditMode = 'form' | 'direct';
 
 interface DocumentState {
@@ -17,6 +17,8 @@ interface DocumentState {
     lease_deed: any;
     sbi_alias_general: any;
     single_women_affidavit: any;
+    cv_resume: any;
+    identity_card: any;
   };
   setActiveTemplate: (template: TemplateType) => void;
   setEditMode: (mode: EditMode) => void;
@@ -347,6 +349,87 @@ const initialSingleWomenAffidavit = {
   affidavitPlace: 'ARMOOR',
 };
 
+const initialCvResume = {
+  photo: '/assets/default_cv_avatar.png',
+  fullName: 'BENJAMIN SHAH',
+  address: '123 Anywhere St., Any City',
+  phone: '123-456-7890',
+  email: 'hello@reallygreatsite.com',
+  website: 'www.reallygreatsite.com',
+  summary: 'Results-oriented Mechanical and Mechatronics Engineer seeking a challenging position to apply expertise in designing and implementing innovative solutions for complex engineering challenges. Proven track record of success in project management, problem-solving, and cross-functional collaboration. Adept at utilising cutting-edge technologies to optimise processes and enhance overall efficiency.',
+  workExperience: [
+    {
+      role: 'Mechatronics Engineer',
+      company: 'Borcelle Technologies',
+      duration: 'Jan 2023 - Present',
+      points: [
+        'Led development of an advanced automation system, achieving a 15% increase in operational efficiency.',
+        'Streamlined manufacturing processes, reducing production costs by 10%.',
+        'Implemented preventive maintenance strategies, resulting in a 20% decrease in equipment downtime.'
+      ]
+    },
+    {
+      role: 'System Engineer',
+      company: 'Arrowai Industries',
+      duration: 'Feb 2021 - Dec 2022',
+      points: [
+        'Designed and optimised a robotic control system, realizing a 12% performance improvement.',
+        'Coordinated testing and validation, ensuring compliance with industry standards.',
+        'Provided technical expertise, contributing to a 15% reduction in system failures.'
+      ]
+    },
+    {
+      role: 'Junior Project Engineer',
+      company: 'Salford & Co Manufacturing',
+      duration: 'Mar 2020 - Jan 2021',
+      points: [
+        'Managed full lifecycle of a cutting-edge automation project, meeting all milestones.',
+        'Conducted feasibility studies and risk assessments, mitigating potential project risks.',
+        'Collaborated with clients, leading to a 25% increase in customer satisfaction.'
+      ]
+    }
+  ],
+  education: [
+    {
+      degree: 'Bachelor of Mechatronics Engineering with Honours',
+      institution: 'University of Engineering Excellence',
+      duration: 'Aug 2016 - Oct 2019',
+      details: [
+        'Major in Automotive Technology.',
+        'Thesis on "Technological Advancements within the current Mechatronics Industry".'
+      ]
+    },
+    {
+      degree: 'Diploma in Mechanical Engineering',
+      institution: 'Engineering University',
+      duration: 'May 2014 - May 2016',
+      details: [
+        'Relevant coursework in Structural Design and Project Management.'
+      ]
+    }
+  ],
+  additionalInfo: {
+    technicalSkills: 'Mechatronics System Integration, Automotive Engineering Technology, Project Management, Robotics and Automation, CAD for Mechatronics.',
+    languages: 'English, Malay, Japan.',
+    certifications: 'Professional Engineer (PE) License, Project Management Professional (PMP).',
+    awards: 'Actively participated in the "Innovation for Tomorrow" community outreach program, promoting STEM education and inspiring local students.'
+  }
+};
+
+const initialIdentityCard = {
+  photo: '/assets/default_id_photo.png',
+  logo: '/assets/telangana_logo.png',
+  headerGovt: 'GOVERNMENT OF TELANGANA STATE',
+  headerDept: 'PANCHAYATHRAJ DEPARTMENT',
+  cardTitle: 'IDENTITY CARD',
+  name: 'Pradhyumn Dhondi',
+  fatherName: 'Jagadeeshwar Dhondi',
+  dob: '30/08/2004',
+  designation: 'Secretary',
+  placeOfWorking: 'Armoor, 503224',
+  authorityTitle: 'MPDO, Aloor'
+};
+
 export const useDocumentStore = create<DocumentState>((set) => ({
   activeTemplate: 'rent_agreement',
   editMode: 'form',
@@ -361,6 +444,8 @@ export const useDocumentStore = create<DocumentState>((set) => ({
     lease_deed: initialLeaseDeed,
     sbi_alias_general: initialSbiAliasGeneral,
     single_women_affidavit: initialSingleWomenAffidavit,
+    cv_resume: initialCvResume,
+    identity_card: initialIdentityCard,
   },
   setActiveTemplate: (template) => set({ activeTemplate: template }),
   setEditMode: (mode) => set({ editMode: mode }),

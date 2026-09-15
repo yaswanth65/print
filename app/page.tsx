@@ -54,6 +54,28 @@ interface WorkOrder {
 
 const TEMPLATE_DOCUMENTS = [
   {
+    id: 'cv_resume' as TemplateType,
+    name: 'Curriculum Vitae (CV / Resume)',
+    category: 'Employment & Career',
+    folder: 'CV & Resume',
+    pages: '1 Page',
+    lastModified: '15 Sep, 2026',
+    icon: User,
+    badge: 'Photo Upload',
+    desc: 'Professional engineering/general curriculum vitae with photo, work history & skills.',
+  },
+  {
+    id: 'identity_card' as TemplateType,
+    name: 'Government Identity Card',
+    category: 'Official ID / Passes',
+    folder: 'ID Cards',
+    pages: '1 Card',
+    lastModified: '15 Sep, 2026',
+    icon: FileCheck,
+    badge: 'Dual Upload',
+    desc: 'Government of Telangana Panchayathraj Dept ID card with emblem, photo & details.',
+  },
+  {
     id: 'cdma_death_correction' as TemplateType,
     name: 'CDMA Death Corrections Application Form',
     category: 'Government / Municipal Forms',

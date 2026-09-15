@@ -10,6 +10,8 @@ interface ToolbarProps {
 }
 
 const BUILTIN_TEMPLATE_TYPES: { id: TemplateType; label: string }[] = [
+  { id: 'cv_resume', label: 'Curriculum Vitae (CV / Resume)' },
+  { id: 'identity_card', label: 'Government Identity Card' },
   { id: 'cdma_death_correction', label: 'CDMA Death Corrections Application Form' },
   { id: 'lease_deed', label: 'Lease Deed (Commercial / Mulgie)' },
   { id: 'sbi_alias_general', label: 'SBI Alias Declaration Affidavit' },
