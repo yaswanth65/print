@@ -4,7 +4,8 @@ import { useDocumentStore } from '@/store/useDocumentStore';
 import styles from './leaseDeed.module.css';
 
 export const LeaseDeedPreview: React.FC = () => {
-  const { data } = useDocumentStore();
+  const { data, language } = useDocumentStore();
+  const isTe = language === 'te';
   const d = data.lease_deed;
   const t = 'lease_deed';
 

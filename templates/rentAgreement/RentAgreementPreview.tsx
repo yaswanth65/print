@@ -2,7 +2,8 @@ import { EditableField } from '@/components/shared/EditableField';
 import { useDocumentStore } from '@/store/useDocumentStore';
 
 export const RentAgreementPreview = () => {
-  const { data } = useDocumentStore();
+  const { data, language } = useDocumentStore();
+  const isTe = language === 'te';
   const d = data.rent_agreement;
   const t = 'rent_agreement';
 
@@ -18,7 +19,7 @@ export const RentAgreementPreview = () => {
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold uppercase tracking-tighter underline underline-offset-4">RENT AGREEMENT</h1>
+          <h1 className="text-2xl font-bold uppercase tracking-tighter underline underline-offset-4">{isTe ? "గృహ అద్దె ఒప్పంద పత్రము (RENT AGREEMENT)" : "RENT AGREEMENT"}</h1>
         </div>
         
         <p className="mb-4 leading-relaxed">

@@ -4,7 +4,8 @@ import { useDocumentStore } from '@/store/useDocumentStore';
 import styles from './sbiAliasGeneral.module.css';
 
 export const SbiAliasGeneralPreview: React.FC = () => {
-  const { data } = useDocumentStore();
+  const { data, language } = useDocumentStore();
+  const isTe = language === 'te';
   const d = data.sbi_alias_general;
   const t = 'sbi_alias_general';
 
@@ -21,11 +22,11 @@ export const SbiAliasGeneralPreview: React.FC = () => {
 
           {/* Heading */}
           <div className={styles['sbi-alias-recipient']}>
-            BEFORE THE MANAGER, <EditableField template={t} fieldPath="bankName" value={d.bankName} className="font-bold uppercase" /> BRANCH: <EditableField template={t} fieldPath="branchName" value={d.branchName} className="font-bold uppercase" />
+            {isTe ? 'మేనేజర్ గారి సమక్షములో, ' : 'BEFORE THE MANAGER, '}<EditableField template={t} fieldPath="bankName" value={d.bankName} className="font-bold uppercase" /> BRANCH: <EditableField template={t} fieldPath="branchName" value={d.branchName} className="font-bold uppercase" />
           </div>
 
           <h1 className={styles['sbi-alias-title']}>
-            AFFIDAVIT Cum DECLARATION IN REGARD TO ALIAS NAME AND GENUINITY OF ACCOUNT HOLDER
+            {isTe ? 'ఖాతాదారుని పేరు మార్పు / ఏలియాస్ పేరు ధృవీకరణ ప్రమాణ పత్రము (అఫిడవిట్)' : 'AFFIDAVIT Cum DECLARATION IN REGARD TO ALIAS NAME AND GENUINITY OF ACCOUNT HOLDER'}
           </h1>
 
           <p className={styles['sbi-alias-paragraph']}>

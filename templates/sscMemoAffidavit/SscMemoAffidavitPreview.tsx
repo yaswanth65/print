@@ -2,7 +2,8 @@ import { EditableField } from '@/components/shared/EditableField';
 import { useDocumentStore } from '@/store/useDocumentStore';
 
 export const SscMemoAffidavitPreview = () => {
-  const { data } = useDocumentStore();
+  const { data, language } = useDocumentStore();
+  const isTe = language === 'te';
   const d = data.ssc_memo_affidavit;
   const t = 'ssc_memo_affidavit';
 
@@ -16,8 +17,8 @@ export const SscMemoAffidavitPreview = () => {
             <div className="text-xl font-bold tracking-widest text-gray-500">INDIA NON JUDICIAL</div>
           </div>
 
-          <h1 className="text-2xl font-bold text-center underline uppercase tracking-wide mb-2">AFFIDAVIT</h1>
-          <h2 className="text-center text-sm font-bold uppercase mb-10">(For Issue of Duplicate SSC Memo)</h2>
+          <h1 className="text-2xl font-bold text-center underline uppercase tracking-wide mb-2">{isTe ? "ప్రమాణ పత్రము (అఫిడవిట్)" : "AFFIDAVIT"}</h1>
+          <h2 className="text-center text-sm font-bold uppercase mb-10">{isTe ? "(డూప్లికేట్ ఎస్.ఎస్.సి మార్కుల మెమో జారీ కొరకు)" : "(For Issue of Duplicate SSC Memo)"}</h2>
 
           <p className="mb-6 indent-8">
             I, <EditableField template={t} fieldPath="name" value={d.name} className="font-bold" />&nbsp;
@@ -25,7 +26,7 @@ export const SscMemoAffidavitPreview = () => {
             <EditableField template={t} fieldPath="fatherName" value={d.fatherName} className="font-bold" />,
             aged about <EditableField template={t} fieldPath="age" value={d.age} className="font-bold" /> years,
             R/o. <EditableField template={t} fieldPath="address" value={d.address} className="font-bold" />,
-            on solemn oath and affirmation state as under:-
+            {isTe ? "అను నేను సత్యనిష్ఠతో ప్రమాణం చేసి ఈ క్రింది విధంగా తెలియజేయుచున్నాను:-" : "on solemn oath and affirmation state as under:-"}
           </p>
 
           <ol className="list-decimal pl-10 space-y-6 mb-8">
@@ -45,14 +46,14 @@ export const SscMemoAffidavitPreview = () => {
           <div className="flex justify-end mb-24">
             <div className="text-center w-64">
               <div className="border-b border-gray-400 w-full mb-2 h-16 flex items-end justify-center"><span className="text-gray-300 italic text-sm">(Signature)</span></div>
-              <p className="font-bold uppercase tracking-wider">DEPONENT</p>
+              <p className="font-bold uppercase tracking-wider">{isTe ? "ప్రమాణకర్త (DEPONENT)" : "DEPONENT"}</p>
               <p className="text-sm">(<EditableField template={t} fieldPath="name" value={d.name} />)</p>
             </div>
           </div>
 
           <div className="flex justify-end">
             <div className="w-[70%]">
-              <p className="font-bold">Sworn and Signed before me</p>
+              <p className="font-bold">{isTe ? "నా సమక్షములో ప్రమాణము చేసి సంతకము చేయబడినది" : "Sworn and Signed before me"}</p>
               <p className="mt-1">
                 On <EditableField template={t} fieldPath="declarationDate" value={d.declarationDate} className="font-bold" /> at <EditableField template={t} fieldPath="declarationPlace" value={d.declarationPlace} className="font-bold" />
               </p>

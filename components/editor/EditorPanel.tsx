@@ -1528,72 +1528,119 @@ const IdentityCardForm = () => {
         </div>
       </div>
 
-      {/* BACK SIDE DETAILS */}
+      {/* BACK SIDE DETAILS - EXACT USER SCREENSHOT SPECIFICATIONS */}
       <div>
-        <SectionHeader number="04" title="Back Side Details" />
+        <SectionHeader number="04" title="Back Side Details (Official Pass)" />
         <div className="space-y-3">
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Residential Address</label>
-            <textarea
-              rows={2}
-              value={idCardData.back?.address || currentCard.address || ''}
-              onChange={(e) => {
-                const backObj = structuredClone(idCardData.back || {});
-                backObj.address = e.target.value;
-                updateField('identity_card', 'back', backObj);
-              }}
-              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
-            />
-          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Blood Group</label>
+              <label className="block text-[11px] font-semibold text-blue-900 uppercase mb-1">Employee ID</label>
               <input
                 type="text"
-                value={idCardData.back?.bloodGroup || 'O+ve'}
+                value={idCardData.back?.employeeId || '02738492'}
+                onChange={(e) => {
+                  const backObj = structuredClone(idCardData.back || {});
+                  backObj.employeeId = e.target.value;
+                  updateField('identity_card', 'back', backObj);
+                }}
+                className="w-full border border-slate-300 rounded p-2 text-xs bg-white font-bold text-red-700"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-blue-900 uppercase mb-1">Date of Appointment</label>
+              <input
+                type="text"
+                value={idCardData.back?.dateOfAppointment || '09/09/2026'}
+                onChange={(e) => {
+                  const backObj = structuredClone(idCardData.back || {});
+                  backObj.dateOfAppointment = e.target.value;
+                  updateField('identity_card', 'back', backObj);
+                }}
+                className="w-full border border-slate-300 rounded p-2 text-xs bg-white font-bold text-red-700"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-blue-900 uppercase mb-1">Pan No.</label>
+              <input
+                type="text"
+                value={idCardData.back?.panNo || 'COBPV4782D'}
+                onChange={(e) => {
+                  const backObj = structuredClone(idCardData.back || {});
+                  backObj.panNo = e.target.value;
+                  updateField('identity_card', 'back', backObj);
+                }}
+                className="w-full border border-slate-300 rounded p-2 text-xs bg-white font-bold text-red-700"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-blue-900 uppercase mb-1">Aadhar No.</label>
+              <input
+                type="text"
+                value={idCardData.back?.aadharNo || '2939 2038 3232 9183'}
+                onChange={(e) => {
+                  const backObj = structuredClone(idCardData.back || {});
+                  backObj.aadharNo = e.target.value;
+                  updateField('identity_card', 'back', backObj);
+                }}
+                className="w-full border border-slate-300 rounded p-2 text-xs bg-white font-bold text-red-700"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-blue-900 uppercase mb-1">Blood Group</label>
+              <input
+                type="text"
+                value={idCardData.back?.bloodGroup || 'B+'}
                 onChange={(e) => {
                   const backObj = structuredClone(idCardData.back || {});
                   backObj.bloodGroup = e.target.value;
                   updateField('identity_card', 'back', backObj);
                 }}
-                className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+                className="w-full border border-slate-300 rounded p-2 text-xs bg-white font-bold text-red-700"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Emergency Phone</label>
+              <label className="block text-[11px] font-semibold text-blue-900 uppercase mb-1">Mobile Number</label>
               <input
                 type="text"
-                value={idCardData.back?.emergencyContact || ''}
+                value={idCardData.back?.mobileNumber || '+91 9966701124'}
                 onChange={(e) => {
                   const backObj = structuredClone(idCardData.back || {});
-                  backObj.emergencyContact = e.target.value;
+                  backObj.mobileNumber = e.target.value;
                   updateField('identity_card', 'back', backObj);
                 }}
-                className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
+                className="w-full border border-slate-300 rounded p-2 text-xs bg-white font-bold text-red-700"
               />
             </div>
           </div>
+
           <div>
-            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Barcode / Unique Number</label>
-            <input
-              type="text"
-              value={idCardData.back?.barcodeText || ''}
-              onChange={(e) => {
-                const backObj = structuredClone(idCardData.back || {});
-                backObj.barcodeText = e.target.value;
-                updateField('identity_card', 'back', backObj);
-              }}
-              className="w-full border border-slate-300 rounded p-2 text-xs bg-white"
-            />
-          </div>
-          <div>
-            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Card Instructions</label>
+            <label className="block text-[11px] font-semibold text-blue-900 uppercase mb-1">Residential Address</label>
             <textarea
               rows={2}
-              value={idCardData.back?.instructions || ''}
+              value={idCardData.back?.residentialAddress || 'H.No 2-39/43, Housing Board Colony, Vidyanagar, Armoor, 503224, Dist. Nizamabad, Telangana'}
               onChange={(e) => {
                 const backObj = structuredClone(idCardData.back || {});
-                backObj.instructions = e.target.value;
+                backObj.residentialAddress = e.target.value;
+                updateField('identity_card', 'back', backObj);
+              }}
+              className="w-full border border-slate-300 rounded p-2 text-xs bg-white font-bold text-red-700"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Signature Area Label</label>
+            <input
+              type="text"
+              value={idCardData.back?.signText || 'Sign. of the employee'}
+              onChange={(e) => {
+                const backObj = structuredClone(idCardData.back || {});
+                backObj.signText = e.target.value;
                 updateField('identity_card', 'back', backObj);
               }}
               className="w-full border border-slate-300 rounded p-2 text-xs bg-white"

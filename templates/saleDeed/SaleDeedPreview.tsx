@@ -2,7 +2,8 @@ import { EditableField } from '@/components/shared/EditableField';
 import { useDocumentStore } from '@/store/useDocumentStore';
 
 export const SaleDeedPreview = () => {
-  const { data } = useDocumentStore();
+  const { data, language } = useDocumentStore();
+  const isTe = language === 'te';
   const d = data.sale_deed;
   const t = 'sale_deed';
 

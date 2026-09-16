@@ -3,20 +3,20 @@
 import React, { useRef } from 'react';
 import { EditableField } from '@/components/shared/EditableField';
 import { useDocumentStore } from '@/store/useDocumentStore';
-import { Camera, Upload, QrCode, ShieldCheck } from 'lucide-react';
+import { Camera, Upload } from 'lucide-react';
 import styles from './identityCard.module.css';
 
 export const IdentityCardPreview: React.FC = () => {
-  const { data, updateField, idCardSide, activeIdCardType } = useDocumentStore();
-  const d = data.identity_card;
+  const { data, updateField, idCardSide, activeIdCardType, language } = useDocumentStore();
+  const d = data.identity_card || {};
   const t = 'identity_card';
+  const isTe = language === 'te';
 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const backPhotoInputRef = useRef<HTMLInputElement>(null);
 
-  // Active card profile
-  const cardProfile = d.cards?.[activeIdCardType] || d.front || {};
+  const cardProfile = (d.cards && d.cards[activeIdCardType]) || d.front || {};
+  const backData = d.back || {};
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -25,8 +25,12 @@ export const IdentityCardPreview: React.FC = () => {
     reader.onload = (event) => {
       const base64 = event.target?.result as string;
       if (base64) {
-        updateField('identity_card', `cards.${activeIdCardType}.photo`, base64);
         updateField('identity_card', 'photo', base64);
+        if (d.cards && d.cards[activeIdCardType]) {
+          const cardsClone = structuredClone(d.cards);
+          cardsClone[activeIdCardType].photo = base64;
+          updateField('identity_card', 'cards', cardsClone);
+        }
       }
     };
     reader.readAsDataURL(file);
@@ -39,26 +43,18 @@ export const IdentityCardPreview: React.FC = () => {
     reader.onload = (event) => {
       const base64 = event.target?.result as string;
       if (base64) {
-        updateField('identity_card', `cards.${activeIdCardType}.logo`, base64);
         updateField('identity_card', 'logo', base64);
+        if (d.cards && d.cards[activeIdCardType]) {
+          const cardsClone = structuredClone(d.cards);
+          cardsClone[activeIdCardType].logo = base64;
+          updateField('identity_card', 'cards', cardsClone);
+        }
       }
     };
     reader.readAsDataURL(file);
   };
 
-  const handleBackPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      if (base64) {
-        updateField('identity_card', 'back.backPhoto', base64);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
+  // FRONT VIEW
   const renderFront = () => (
     <div className={styles['id-card']}>
       {/* TOP HEADER */}
@@ -74,17 +70,29 @@ export const IdentityCardPreview: React.FC = () => {
 
           <div className={styles['id-header-text']}>
             <div className={styles['id-header-govt']}>
-              <EditableField template={t} fieldPath={`cards.${activeIdCardType}.headerGovt`} value={cardProfile.headerGovt || 'GOVERNMENT OF TELANGANA STATE'} />
+              <EditableField
+                template={t}
+                fieldPath={`cards.${activeIdCardType}.headerGovt`}
+                value={isTe ? 'తెలంగాణ ప్రభుత్వము' : (cardProfile.headerGovt || 'GOVERNMENT OF TELANGANA STATE')}
+              />
             </div>
             <div className={styles['id-header-dept']}>
-              <EditableField template={t} fieldPath={`cards.${activeIdCardType}.headerDept`} value={cardProfile.headerDept || 'PANCHAYATHRAJ DEPARTMENT'} />
+              <EditableField
+                template={t}
+                fieldPath={`cards.${activeIdCardType}.headerDept`}
+                value={isTe ? 'పంచాయతీరాజ్ శాఖ' : (cardProfile.headerDept || 'PANCHAYATHRAJ DEPARTMENT')}
+              />
             </div>
           </div>
         </div>
 
         {/* RED BANNER */}
         <div className={styles['id-red-strip']}>
-          <EditableField template={t} fieldPath={`cards.${activeIdCardType}.cardTitle`} value={cardProfile.cardTitle || 'IDENTITY CARD'} />
+          <EditableField
+            template={t}
+            fieldPath={`cards.${activeIdCardType}.cardTitle`}
+            value={isTe ? 'గుర్తింపు కార్డు' : (cardProfile.cardTitle || 'IDENTITY CARD')}
+          />
         </div>
       </div>
 
@@ -104,7 +112,7 @@ export const IdentityCardPreview: React.FC = () => {
               <span className="text-[9px]">Photo</span>
             </div>
           )}
-          <div className={styles['id-photo-overlay'] + " print:hidden"}>
+          <div className={styles['id-photo-overlay'] + ' print:hidden'}>
             <Upload className="w-4 h-4 mb-1" />
             <span>Upload</span>
           </div>
@@ -113,195 +121,154 @@ export const IdentityCardPreview: React.FC = () => {
         {/* DETAILS SECTION */}
         <div className={styles['id-details']}>
           <div className={styles['id-row']}>
-            <span className={styles['id-label']}>Name</span>
+            <span className={styles['id-label']}>{isTe ? 'పేరు' : 'Name'}</span>
             <span className={styles['id-colon']}>:</span>
             <span className={styles['id-value']}>
               <EditableField template={t} fieldPath={`cards.${activeIdCardType}.name`} value={cardProfile.name || d.name} />
             </span>
           </div>
 
-          {activeIdCardType === 'aadhaar' ? (
-            <>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>DOB</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath="cards.aadhaar.dob" value={cardProfile.dob || '30/08/2004'} />
-                </span>
-              </div>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Gender</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath="cards.aadhaar.gender" value={cardProfile.gender || 'MALE'} />
-                </span>
-              </div>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Aadhaar No.</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath="cards.aadhaar.aadharNumber" value={cardProfile.aadharNumber || '6469 4213 5938'} />
-                </span>
-              </div>
-            </>
-          ) : activeIdCardType === 'pan' ? (
-            <>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Father Name</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath="cards.pan.fatherName" value={cardProfile.fatherName || d.fatherName} />
-                </span>
-              </div>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Date of Birth</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath="cards.pan.dob" value={cardProfile.dob || d.dob} />
-                </span>
-              </div>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Permanent Acc.</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath="cards.pan.panNumber" value={cardProfile.panNumber || 'ABCDE1234F'} />
-                </span>
-              </div>
-            </>
-          ) : activeIdCardType === 'driving' ? (
-            <>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>DL Number</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath="cards.driving.dlNumber" value={cardProfile.dlNumber || 'TS-16 20220008456'} />
-                </span>
-              </div>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Valid Till</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath="cards.driving.validTill" value={cardProfile.validTill || '29/08/2044'} />
-                </span>
-              </div>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Vehicle Class</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath="cards.driving.vehicleClass" value={cardProfile.vehicleClass || 'MCWG, LMV'} />
-                </span>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Father Name</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath={`cards.${activeIdCardType}.fatherName`} value={cardProfile.fatherName || d.fatherName} />
-                </span>
-              </div>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Date of Birth</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath={`cards.${activeIdCardType}.dob`} value={cardProfile.dob || d.dob} />
-                </span>
-              </div>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Designation</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath={`cards.${activeIdCardType}.designation`} value={cardProfile.designation || d.designation} />
-                </span>
-              </div>
-              <div className={styles['id-row']}>
-                <span className={styles['id-label']}>Place of Working</span>
-                <span className={styles['id-colon']}>:</span>
-                <span className={styles['id-value']}>
-                  <EditableField template={t} fieldPath={`cards.${activeIdCardType}.placeOfWorking`} value={cardProfile.placeOfWorking || d.placeOfWorking} />
-                </span>
-              </div>
-            </>
-          )}
+          <div className={styles['id-row']}>
+            <span className={styles['id-label']}>{isTe ? 'తండ్రి పేరు' : 'Father Name'}</span>
+            <span className={styles['id-colon']}>:</span>
+            <span className={styles['id-value']}>
+              <EditableField template={t} fieldPath={`cards.${activeIdCardType}.fatherName`} value={cardProfile.fatherName || d.fatherName} />
+            </span>
+          </div>
+          <div className={styles['id-row']}>
+            <span className={styles['id-label']}>{isTe ? 'పుట్టిన తేదీ' : 'Date of Birth'}</span>
+            <span className={styles['id-colon']}>:</span>
+            <span className={styles['id-value']}>
+              <EditableField template={t} fieldPath={`cards.${activeIdCardType}.dob`} value={cardProfile.dob || d.dob} />
+            </span>
+          </div>
+          <div className={styles['id-row']}>
+            <span className={styles['id-label']}>{isTe ? 'హోదా' : 'Designation'}</span>
+            <span className={styles['id-colon']}>:</span>
+            <span className={styles['id-value']}>
+              <EditableField template={t} fieldPath={`cards.${activeIdCardType}.designation`} value={cardProfile.designation || d.designation} />
+            </span>
+          </div>
+          <div className={styles['id-row']}>
+            <span className={styles['id-label']}>{isTe ? 'పనిచేయు స్థలం' : 'Place of Working'}</span>
+            <span className={styles['id-colon']}>:</span>
+            <span className={styles['id-value']}>
+              <EditableField template={t} fieldPath={`cards.${activeIdCardType}.placeOfWorking`} value={cardProfile.placeOfWorking || d.placeOfWorking} />
+            </span>
+          </div>
         </div>
       </div>
 
       {/* FOOTER AUTHORITY */}
       <div className={styles['id-footer']}>
         <div className={styles['id-authority']}>
-          <EditableField template={t} fieldPath={`cards.${activeIdCardType}.authorityTitle`} value={cardProfile.authorityTitle || d.authorityTitle || 'Issuing Authority'} />
+          <EditableField
+            template={t}
+            fieldPath={`cards.${activeIdCardType}.authorityTitle`}
+            value={isTe ? 'ఎం.పి.డి.ఓ / జారీ అధికారి' : (cardProfile.authorityTitle || d.authorityTitle || 'MPDO, Aloor')}
+          />
         </div>
       </div>
     </div>
   );
 
+  // BACK VIEW - EXACT USER SCREENSHOT FORMAT
   const renderBack = () => (
-    <div className={styles['id-card']}>
-      {/* TOP HEADER FOR BACK */}
-      <div className={styles['id-back-header']}>
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span className="font-bold text-xs uppercase tracking-wider">Official Identification Document</span>
+    <div className={styles['id-card-back-custom']}>
+      {/* 7 ROWS OF LABELS (DARK BLUE) & VALUES (BOLD RED) */}
+      <div className={styles['id-back-grid']}>
+        {/* Row 1: Employee ID */}
+        <div className={styles['id-back-row']}>
+          <span className={styles['id-back-label']}>
+            {isTe ? 'Employee ID' : 'Employee ID'}
+          </span>
+          <span className={styles['id-back-colon']}>:</span>
+          <span className={styles['id-back-val']}>
+            <EditableField template={t} fieldPath="back.employeeId" value={backData.employeeId || '02738492'} />
+          </span>
         </div>
-        <span className="text-[10px] text-slate-300">Side 2 of 2</span>
+
+        {/* Row 2: Date of Appointment */}
+        <div className={styles['id-back-row']}>
+          <span className={styles['id-back-label']}>
+            {isTe ? 'Date of Appointment' : 'Date of Appointment'}
+          </span>
+          <span className={styles['id-back-colon']}>:</span>
+          <span className={styles['id-back-val']}>
+            <EditableField template={t} fieldPath="back.dateOfAppointment" value={backData.dateOfAppointment || '09/09/2026'} />
+          </span>
+        </div>
+
+        {/* Row 3: Pan No. */}
+        <div className={styles['id-back-row']}>
+          <span className={styles['id-back-label']}>
+            {isTe ? 'Pan No.' : 'Pan No.'}
+          </span>
+          <span className={styles['id-back-colon']}>:</span>
+          <span className={styles['id-back-val']}>
+            <EditableField template={t} fieldPath="back.panNo" value={backData.panNo || 'COBPV4782D'} />
+          </span>
+        </div>
+
+        {/* Row 4: Aadhar No. */}
+        <div className={styles['id-back-row']}>
+          <span className={styles['id-back-label']}>
+            {isTe ? 'Aadhar No.' : 'Aadhar No.'}
+          </span>
+          <span className={styles['id-back-colon']}>:</span>
+          <span className={styles['id-back-val']}>
+            <EditableField template={t} fieldPath="back.aadharNo" value={backData.aadharNo || '2939 2038 3232 9183'} />
+          </span>
+        </div>
+
+        {/* Row 5: Blood Group */}
+        <div className={styles['id-back-row']}>
+          <span className={styles['id-back-label']}>
+            {isTe ? 'Blood Group' : 'Blood Group'}
+          </span>
+          <span className={styles['id-back-colon']}>:</span>
+          <span className={styles['id-back-val']}>
+            <EditableField template={t} fieldPath="back.bloodGroup" value={backData.bloodGroup || 'B+'} />
+          </span>
+        </div>
+
+        {/* Row 6: Residential Address */}
+        <div className={styles['id-back-row']}>
+          <span className={styles['id-back-label']}>
+            {isTe ? 'Residential Address' : 'Residential Address'}
+          </span>
+          <span className={styles['id-back-colon']}>:</span>
+          <span className={styles['id-back-val']}>
+            <EditableField
+              template={t}
+              fieldPath="back.residentialAddress"
+              value={backData.residentialAddress || 'H.No 2-39/43, Housing Board Colony, Vidyanagar, Armoor, 503224, Dist. Nizamabad, Telangana'}
+            />
+          </span>
+        </div>
+
+        {/* Row 7: Mobile Number */}
+        <div className={styles['id-back-row']}>
+          <span className={styles['id-back-label']}>
+            {isTe ? 'Mobile Number' : 'Mobile Number'}
+          </span>
+          <span className={styles['id-back-colon']}>:</span>
+          <span className={styles['id-back-val']}>
+            <EditableField template={t} fieldPath="back.mobileNumber" value={backData.mobileNumber || '+91 9966701124'} />
+          </span>
+        </div>
       </div>
 
-      {/* BACK BODY */}
-      <div className={styles['id-back-body']}>
-        <div className={styles['id-back-content']}>
-          <div className="mb-2">
-            <span className="font-bold text-slate-800 text-[11px] block">Address / నివాస చిరునామా:</span>
-            <p className="text-slate-600 text-xs leading-snug">
-              <EditableField template={t} fieldPath="back.address" value={d.back?.address} />
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 mb-2 text-xs">
-            <div>
-              <span className="font-semibold text-slate-700">Blood Group: </span>
-              <span className="font-bold text-red-700">
-                <EditableField template={t} fieldPath="back.bloodGroup" value={d.back?.bloodGroup} />
-              </span>
-            </div>
-            <div>
-              <span className="font-semibold text-slate-700">Emergency Contact: </span>
-              <span className="font-medium text-slate-900">
-                <EditableField template={t} fieldPath="back.emergencyContact" value={d.back?.emergencyContact} />
-              </span>
-            </div>
-          </div>
-
-          <div className="p-2 bg-slate-50 border border-slate-200 rounded text-[10.5px] text-slate-600 leading-relaxed mb-2 whitespace-pre-line">
-            <EditableField template={t} fieldPath="back.instructions" value={d.back?.instructions} />
-          </div>
+      {/* BOTTOM RIGHT: SIGNATURE OF EMPLOYEE */}
+      <div className={styles['id-back-sign-area']}>
+        <div className={styles['id-back-sign-space']}></div>
+        <div className={styles['id-back-sign-text']}>
+          <EditableField
+            template={t}
+            fieldPath="back.signText"
+            value={backData.signText || 'Sign. of the employee'}
+          />
         </div>
-
-        {/* QR / BARCODE SECTION */}
-        <div className={styles['id-qr-section']}>
-          <div
-            className={styles['id-qr-box']}
-            onClick={() => backPhotoInputRef.current?.click()}
-            title="Click to upload custom QR code / back stamp"
-          >
-            {d.back?.backPhoto ? (
-              <img src={d.back.backPhoto} alt="QR Code" className="w-full h-full object-contain" />
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-white p-1">
-                <QrCode className="w-12 h-12 text-slate-800" />
-                <span className="text-[8.5px] text-slate-500 font-mono mt-0.5">SCAN QR</span>
-              </div>
-            )}
-          </div>
-          <div className="text-[9px] font-mono text-slate-500 mt-1 text-center">
-            <EditableField template={t} fieldPath="back.barcodeText" value={d.back?.barcodeText} />
-          </div>
-        </div>
-      </div>
-
-      {/* BACK FOOTER */}
-      <div className={styles['id-back-footer']}>
-        <EditableField template={t} fieldPath="back.issuingOffice" value={d.back?.issuingOffice} />
       </div>
     </div>
   );
@@ -311,7 +278,6 @@ export const IdentityCardPreview: React.FC = () => {
       {/* Hidden file inputs */}
       <input type="file" ref={photoInputRef} accept="image/*" className="hidden" onChange={handlePhotoUpload} />
       <input type="file" ref={logoInputRef} accept="image/*" className="hidden" onChange={handleLogoUpload} />
-      <input type="file" ref={backPhotoInputRef} accept="image/*" className="hidden" onChange={handleBackPhotoUpload} />
 
       {/* RENDER ACCORDING TO idCardSide */}
       {idCardSide === 'front' && renderFront()}

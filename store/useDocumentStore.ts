@@ -457,13 +457,14 @@ const initialIdentityCard = {
     authorityTitle: 'MPDO, Aloor',
   },
   back: {
-    address: 'H.No. 4-82, Main Road, Armoor, Nizamabad Dist, Telangana - 503224',
-    bloodGroup: 'O+ve',
-    emergencyContact: '+91 98765 43210',
-    instructions: '1. This card is property of the Govt. of Telangana.\n2. If found, please return to the issuing authority.\n3. Tampering with this card is a punishable offense.',
-    issuingOffice: 'Office of the Mandal Parishad Development Officer, Aloor',
-    barcodeText: 'TS-PRD-2024-0089',
-    backPhoto: '',
+    employeeId: '02738492',
+    dateOfAppointment: '09/09/2026',
+    panNo: 'COBPV4782D',
+    aadharNo: '2939 2038 3232 9183',
+    bloodGroup: 'B+',
+    residentialAddress: 'H.No 2-39/43, Housing Board Colony, Vidyanagar, Armoor, 503224, Dist. Nizamabad, Telangana',
+    mobileNumber: '+91 9966701124',
+    signText: 'Sign. of the employee',
   },
   // Multi-card profiles
   cards: {

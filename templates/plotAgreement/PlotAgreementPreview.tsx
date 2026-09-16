@@ -2,7 +2,8 @@ import { EditableField } from '@/components/shared/EditableField';
 import { useDocumentStore } from '@/store/useDocumentStore';
 
 export const PlotAgreementPreview = () => {
-  const { data } = useDocumentStore();
+  const { data, language } = useDocumentStore();
+  const isTe = language === 'te';
   const d = data.plot_agreement;
   const t = 'plot_agreement';
 
@@ -13,7 +14,7 @@ export const PlotAgreementPreview = () => {
       <div className="sale-deed-paper bg-white shadow-xl flex flex-col text-justify font-[Times_New_Roman,serif] text-[12pt] leading-[1.25] w-[210mm] min-h-[297mm] p-[0.6in] box-border">
         <div className="flex-1">
           <h1 className="text-[14pt] font-bold text-center uppercase tracking-wide mb-[8.5pt]">
-            PLOT SALE AGREEMENT
+            {isTe ? 'ప్లాట్ విక్రయ ఒప్పంద పత్రము (PLOT SALE AGREEMENT)' : 'PLOT SALE AGREEMENT'}
           </h1>
           <p className="text-[10pt] text-center italic mb-[8.5pt]">
             (Draft Format - Institutional / Legal Execution Version)
