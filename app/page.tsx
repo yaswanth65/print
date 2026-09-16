@@ -12,6 +12,7 @@ import {
   LayoutGrid,
   List,
   Search,
+  Bell,
   Plus,
   ArrowUpDown,
   ExternalLink,
@@ -19,6 +20,8 @@ import {
   Clock,
   AlertCircle,
   X,
+  Eye,
+  Pencil,
   ChevronRight,
   TrendingUp,
   DollarSign,
@@ -246,16 +249,13 @@ const NAVBAR_MENU_CATEGORIES = [
   },
 ];
 
-// Exact 8 Operators requested
+// Exact 5 Operators requested
 const OPERATORS_LIST = [
   { id: '1', name: 'Jagadeeshwar Dhondi', role: 'Senior Operator' },
   { id: '2', name: 'Pradhyumn Dhondi', role: 'Chief Operator' },
   { id: '3', name: 'Poshetty', role: 'Legal Documentation' },
   { id: '4', name: 'Vennela', role: 'Forms & DTP' },
   { id: '5', name: 'Manikanta', role: 'General Operator' },
-  { id: '6', name: 'Ravi', role: 'DTP Operator' },
-  { id: '7', name: 'Prasad', role: 'Accounts & Print' },
-  { id: '8', name: 'Sunil', role: 'Terminal Operator' },
 ];
 
 const SYSTEMS_LIST = [
@@ -471,7 +471,7 @@ export default function RootDashboard() {
     e.preventDefault();
     const op = operatorsList.find((o) => o.id === selectedOperatorId) || operatorsList[0];
     if (!op) {
-      setLoginError('No operators available. Run `npm run seed` to populate the database.');
+      setLoginError('No operators available. Please contact your administrator.');
       return;
     }
     setLoginLoading(true);
@@ -654,7 +654,7 @@ export default function RootDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[290px] overflow-y-auto pr-1">
                 {operatorsList.length === 0 && (
                   <div className="col-span-2 p-3 rounded-xl border border-amber-200 bg-amber-50 text-xs text-amber-700">
-                    {operatorsLoadError || 'No operators found. Run `npm run seed` to populate the database.'}
+                    {operatorsLoadError || 'No operators found. Please contact the administrator.'}
                   </div>
                 )}
                 {operatorsList.map((op) => (
@@ -688,24 +688,7 @@ export default function RootDashboard() {
               </div>
             </div>
 
-            {/* PIN ENTRY */}
-            <div>
-              <label className="block text-xs font-bold text-[#525252] uppercase tracking-wider mb-2">
-                Operator PIN
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-[#525252] absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  inputMode="numeric"
-                  autoComplete="current-password"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value)}
-                  placeholder="Enter your 4-digit PIN"
-                  className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-[#E5E5E5] focus:outline-none focus:border-[#2C75FF] focus:ring-2 focus:ring-blue-100"
-                />
-              </div>
-            </div>
+            {/* PIN ENTRY BYPASSED */}
 
             {loginError && (
               <div className="p-3 rounded-xl border border-red-200 bg-red-50 text-xs font-semibold text-red-600">
@@ -715,7 +698,7 @@ export default function RootDashboard() {
 
             <button
               type="submit"
-              disabled={loginLoading || !pin || !selectedOperatorId}
+              disabled={loginLoading || !selectedOperatorId}
               className="w-full py-3.5 px-4 bg-[#2C75FF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
             >
               {loginLoading ? (
@@ -732,9 +715,6 @@ export default function RootDashboard() {
           <div className="mt-6 pt-5 border-t border-[#E5E5E5] text-center text-xs text-[#525252] flex items-center justify-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             Central Database connected to Neon PostgreSQL
-            {process.env.NODE_ENV !== 'production' && (
-              <span className="text-[10px] text-slate-400">(seed PINs 1001-1005 / default 1234)</span>
-            )}
           </div>
         </div>
       </div>
@@ -854,13 +834,15 @@ export default function RootDashboard() {
           {/* Left: Terminal & Active View */}
           <div className="flex items-center gap-4">
             <div>
-              <div className="text-[11px] font-semibold text-[#525252] uppercase tracking-wider flex items-center gap-2">
-                <span>Varma Xerox Terminal</span>
-                <span>/</span>
-                <span className="text-[#2C75FF] font-bold">{currentOperator.system}</span>
+              <div className="text-[13px] font-medium text-slate-500 flex items-center gap-2">
+                <span>Home</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+                <span className="text-slate-800">
+                  {activeTab === 'files' ? 'Documents & Templates' : activeTab === 'orders' ? 'Work Orders' : activeTab === 'history' ? 'History' : 'Price Library'}
+                </span>
               </div>
-              <h2 className="text-xl font-bold text-[#0A0A0A] tracking-tight mt-0.5">
-                {activeTab === 'files' ? 'Documents & Templates' : 'Work Orders Dashboard'}
+              <h2 className="text-2xl font-semibold text-slate-900 tracking-tight mt-1">
+                {currentOperator.name}
               </h2>
             </div>
 
@@ -937,42 +919,22 @@ export default function RootDashboard() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsNewOrderOpen(true)}
-              className="px-4 py-2 bg-[#2C75FF] hover:bg-blue-600 text-white text-xs font-semibold rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+              className="w-10 h-10 rounded-xl border border-[#E5E5E5] flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">New Work Order</span>
             </button>
-
             <button
-              onClick={() => {
-                setActiveTemplate('identity_card');
-                router.push('/operator');
-              }}
-              className="px-4 py-2 bg-[#F7F7F7] hover:bg-[#EBEBEB] text-[#0A0A0A] text-xs font-semibold rounded-xl border border-[#E5E5E5] transition-all flex items-center gap-2 cursor-pointer"
-              title="Open Varma Xerox Print Simulator"
+              className="w-10 h-10 rounded-xl border border-[#E5E5E5] flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors cursor-pointer relative"
             >
-              <Printer className="w-4 h-4 text-[#525252]" />
-              <span>Open Print Simulator</span>
+              <Bell className="w-4 h-4" />
+              <span className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-red-500 border-2 border-white"></span>
             </button>
-
-            <div className="h-6 w-px bg-[#E5E5E5] mx-1"></div>
-
-            {/* Operator info & Switch User Trigger */}
             <div
               onClick={() => setIsSwitchUserOpen(true)}
-              className="flex items-center gap-2.5 p-1.5 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-slate-200"
-              title="Click to Switch User / Terminal"
+              className="w-10 h-10 ml-1 rounded-full bg-[#2C75FF] text-white flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm hover:bg-blue-600 transition-colors"
+              title="Click to Switch User"
             >
-              <div className="w-9 h-9 rounded-full bg-[#EFEEFA] text-[#2C75FF] font-bold text-xs flex items-center justify-center border border-blue-100 shadow-xs">
-                {currentOperator.name.charAt(0)}
-              </div>
-              <div className="text-left leading-tight hidden md:block">
-                <div className="text-xs font-bold text-[#0A0A0A] flex items-center gap-1">
-                  <span>{currentOperator.name}</span>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
-                </div>
-                <div className="text-[11px] text-[#525252]">{currentOperator.system}</div>
-              </div>
+              {currentOperator.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
             </div>
           </div>
         </header>
@@ -1145,154 +1107,181 @@ export default function RootDashboard() {
             <div className="space-y-6 max-w-7xl mx-auto">
               {/* 4 KPI METRIC CARDS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white rounded-2xl border border-[#E5E5E5] p-5 shadow-xs">
-                  <div className="flex items-center justify-between text-xs text-[#525252] mb-1 font-semibold">
-                    <span>Total Work Orders</span>
-                    <ClipboardList className="w-4 h-4 text-[#2C75FF]" />
-                  </div>
-                  <div className="text-2xl font-black text-[#0A0A0A]">{metrics.totalOrders}</div>
-                  <div className="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" /> Live synced with Neon DB
+                <div className="bg-gradient-to-br from-blue-50/50 to-white rounded-2xl border border-slate-200 p-5 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full blur-3xl -mr-10 -mt-10 opacity-60"></div>
+                  <div className="relative">
+                    <div className="text-sm font-semibold text-slate-700 mb-4">Total Work Orders</div>
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-slate-900">{metrics.totalOrders}</div>
+                        <div className="text-[11px] text-slate-500 mt-1">Till date</div>
+                      </div>
+                      <div className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold border border-emerald-100">
+                        + 8.70%
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-[#E5E5E5] p-5 shadow-xs">
-                  <div className="flex items-center justify-between text-xs text-[#525252] mb-1 font-semibold">
-                    <span>Completed Jobs</span>
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <div className="bg-gradient-to-br from-red-50/30 to-white rounded-2xl border border-slate-200 p-5 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-red-100 rounded-full blur-3xl -mr-10 -mt-10 opacity-60"></div>
+                  <div className="relative">
+                    <div className="text-sm font-semibold text-slate-700 mb-4">WO Completed</div>
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-slate-900">{metrics.completedOrders}</div>
+                        <div className="text-[11px] text-slate-500 mt-1">from last week</div>
+                      </div>
+                      <div className="px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-[10px] font-bold border border-red-100">
+                        - 1.06%
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-2xl font-black text-[#0A0A0A]">{metrics.completedOrders}</div>
-                  <div className="text-[11px] text-[#525252] mt-1">Ready for pickup</div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-[#E5E5E5] p-5 shadow-xs">
-                  <div className="flex items-center justify-between text-xs text-[#525252] mb-1 font-semibold">
-                    <span>Total Collected</span>
-                    <DollarSign className="w-4 h-4 text-[#2C75FF]" />
+                <div className="bg-gradient-to-br from-green-50/30 to-white rounded-2xl border border-slate-200 p-5 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-full blur-3xl -mr-10 -mt-10 opacity-60"></div>
+                  <div className="relative">
+                    <div className="text-sm font-semibold text-slate-700 mb-4">WO Amount Collected</div>
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-slate-900">₹{metrics.amountCollected}</div>
+                        <div className="text-[11px] text-slate-500 mt-1">from last week</div>
+                      </div>
+                      <div className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold border border-emerald-100">
+                        + 3.56%
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-2xl font-black text-[#0A0A0A]">₹{metrics.amountCollected}</div>
-                  <div className="text-[11px] text-emerald-600 font-semibold mt-1">Direct cash/UPI</div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-[#E5E5E5] p-5 shadow-xs">
-                  <div className="flex items-center justify-between text-xs text-[#525252] mb-1 font-semibold">
-                    <span>Pending Due</span>
-                    <AlertCircle className="w-4 h-4 text-amber-500" />
+                <div className="bg-gradient-to-br from-pink-50/30 to-white rounded-2xl border border-slate-200 p-5 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-pink-100 rounded-full blur-3xl -mr-10 -mt-10 opacity-60"></div>
+                  <div className="relative">
+                    <div className="text-sm font-semibold text-slate-700 mb-4">QO Amount Pending</div>
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <div className="text-2xl font-bold text-slate-900">₹{metrics.amountPending}</div>
+                        <div className="text-[11px] text-slate-500 mt-1">from last week</div>
+                      </div>
+                      <div className="px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-[10px] font-bold border border-red-100">
+                        - 2.08%
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-2xl font-black text-[#0A0A0A]">₹{metrics.amountPending}</div>
-                  <div className="text-[11px] text-amber-600 font-semibold mt-1">Due at delivery</div>
                 </div>
               </div>
 
               {/* ORDERS LIST & TABLE */}
-              <div className="bg-white rounded-2xl border border-[#E5E5E5] p-6 shadow-xs space-y-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-base font-bold text-[#0A0A0A]">Active Customer Work Orders</h3>
-                    <p className="text-xs text-[#525252]">Real-time queue across all 5 operator terminals</p>
-                  </div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full min-h-[500px]">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-b border-slate-100 gap-4">
+                  <h3 className="text-base font-bold text-slate-900">Work Orders List</h3>
 
                   <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <div className="relative flex-1 sm:w-64">
-                      <Search className="w-4 h-4 text-[#525252] absolute left-3 top-1/2 -translate-y-1/2" />
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
-                        placeholder="Search customer, phone, WO#..."
+                        placeholder="Search customer, contact, etc"
                         value={ordersSearch}
                         onChange={(e) => setOrdersSearch(e.target.value)}
-                        className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-[#E5E5E5] bg-white focus:outline-none focus:border-[#2C75FF]"
+                        className="w-full sm:w-56 pl-9 pr-3 py-1.5 text-sm rounded-lg border border-slate-200 focus:outline-none focus:border-blue-400"
                       />
                     </div>
-
+                    
                     <select
                       value={ordersStatusFilter}
                       onChange={(e) => setOrdersStatusFilter(e.target.value)}
-                      className="px-3 py-1.5 text-xs rounded-lg border border-[#E5E5E5] bg-white text-[#0A0A0A] font-semibold focus:outline-none"
+                      className="py-1.5 px-3 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:border-blue-400"
                     >
                       <option value="All Status">All Status</option>
                       <option value="Pending">Pending</option>
                       <option value="In Progress">In Progress</option>
                       <option value="Completed">Completed</option>
-                      <option value="Delivered">Delivered</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Cancel">Cancel</option>
                     </select>
 
+                    <button className="py-1.5 px-3 text-sm rounded-lg border border-slate-200 bg-white flex items-center gap-2 cursor-pointer hover:bg-slate-50">
+                      May 31, 2026
+                      <Clock className="w-4 h-4 text-slate-500" />
+                    </button>
+
                     <button
-                      onClick={loadOrders}
-                      className="p-2 rounded-lg border border-[#E5E5E5] hover:bg-slate-50 text-[#525252] transition-colors cursor-pointer"
-                      title="Refresh Orders"
+                      onClick={() => setIsNewOrderOpen(true)}
+                      className="py-1.5 px-4 text-sm font-semibold rounded-lg bg-[#2C75FF] text-white hover:bg-blue-600 transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
                     >
-                      <RefreshCw className={`w-4 h-4 ${ordersLoading ? 'animate-spin' : ''}`} />
+                      <Plus className="w-4 h-4" />
+                      New Work Order
                     </button>
                   </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-[#EBEBEB]">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-[#F7F7F7] border-b border-[#EBEBEB] text-[#525252] font-semibold">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-slate-600">
+                    <thead className="bg-white border-b border-slate-200 text-slate-900 font-semibold">
                       <tr>
-                        <th className="py-3 px-4">WO Number</th>
-                        <th className="py-3 px-4">Customer</th>
-                        <th className="py-3 px-4">Document</th>
-                        <th className="py-3 px-4">Total</th>
-                        <th className="py-3 px-4">Paid</th>
-                        <th className="py-3 px-4">Due</th>
-                        <th className="py-3 px-4">Status</th>
-                        <th className="py-3 px-4">Created By</th>
-                        <th className="py-3 px-4 text-right">Update</th>
+                        <th className="py-3 px-4 font-semibold whitespace-nowrap">Work Order ID</th>
+                        <th className="py-3 px-4 font-semibold whitespace-nowrap">Customer Name</th>
+                        <th className="py-3 px-4 font-semibold whitespace-nowrap">Customer Contact</th>
+                        <th className="py-3 px-4 font-semibold whitespace-nowrap">Document Type</th>
+                        <th className="py-3 px-4 font-semibold whitespace-nowrap">WO Amount</th>
+                        <th className="py-3 px-4 font-semibold whitespace-nowrap">Amount Paid</th>
+                        <th className="py-3 px-4 font-semibold whitespace-nowrap">Amount Due</th>
+                        <th className="py-3 px-4 font-semibold whitespace-nowrap">Due Date</th>
+                        <th className="py-3 px-4 font-semibold whitespace-nowrap">Status</th>
+                        <th className="py-3 px-4 font-semibold whitespace-nowrap">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#EBEBEB]">
+                    <tbody className="divide-y divide-slate-100">
                       {workOrdersList.length === 0 ? (
                         <tr>
-                          <td colSpan={9} className="text-center py-12 text-[#525252]">
-                            {ordersLoading ? 'Loading work orders...' : 'No work orders found in database'}
+                          <td colSpan={10} className="text-center py-12 text-slate-500">
+                            {ordersLoading ? 'Loading work orders...' : 'No work orders found'}
                           </td>
                         </tr>
                       ) : (
-                        workOrdersList.map((wo) => (
-                          <tr key={wo.id} className="hover:bg-slate-50 transition-colors">
-                            <td className="py-3 px-4 font-mono font-bold text-[#2C75FF]">{wo.wo_number}</td>
-                            <td className="py-3 px-4">
-                              <div className="font-semibold text-[#0A0A0A]">{wo.customer_name}</div>
-                              <div className="text-[11px] text-[#525252]">{wo.customer_contact}</div>
-                            </td>
-                            <td className="py-3 px-4 text-[#0A0A0A] max-w-[200px] truncate">{wo.document_type}</td>
-                            <td className="py-3 px-4 font-semibold text-[#0A0A0A]">₹{wo.wo_amount}</td>
-                            <td className="py-3 px-4 text-emerald-600 font-semibold">₹{wo.amount_paid}</td>
-                            <td className="py-3 px-4 font-semibold text-amber-600">₹{wo.amount_due}</td>
-                            <td className="py-3 px-4">
-                              <span
-                                className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                                  wo.status === 'Completed'
-                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                    : wo.status === 'In Progress'
-                                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                                    : wo.status === 'Delivered'
-                                    ? 'bg-slate-100 text-slate-700 border border-slate-200'
-                                    : 'bg-amber-50 text-amber-700 border border-amber-200'
-                                }`}
-                              >
-                                {wo.status}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-[#525252]">
-                              <div>{wo.created_by || 'Operator'}</div>
-                              <div className="text-[10px] text-slate-400">{wo.system_name || 'System 1'}</div>
-                            </td>
-                            <td className="py-3 px-4 text-right">
-                              <select
-                                value={wo.status}
-                                onChange={(e) => handleUpdateStatus(wo.id, e.target.value)}
-                                className="px-2 py-1 text-[11px] font-semibold rounded border border-[#E5E5E5] bg-white cursor-pointer"
-                              >
-                                <option value="Pending">Pending</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Delivered">Delivered</option>
-                              </select>
-                            </td>
-                          </tr>
-                        ))
+                        workOrdersList.map((wo) => {
+                          let badgeClass = 'bg-slate-50 text-slate-600 border-slate-200';
+                          
+                          if (wo.status === 'Completed' || wo.status === 'Confirmed') {
+                            badgeClass = 'text-emerald-600 bg-emerald-50 border-emerald-100';
+                          } else if (wo.status === 'Pending' || wo.status === 'In Progress') {
+                            badgeClass = 'text-amber-600 bg-amber-50 border-amber-100';
+                          } else if (wo.status === 'Cancel' || wo.status === 'Cancelled') {
+                            badgeClass = 'text-red-600 bg-red-50 border-red-100';
+                          }
+                          
+                          return (
+                            <tr key={wo.id} className="hover:bg-slate-50">
+                              <td className="py-3 px-4 font-medium text-slate-700">{wo.wo_number}</td>
+                              <td className="py-3 px-4 text-slate-600">{wo.customer_name}</td>
+                              <td className="py-3 px-4 text-slate-500">{wo.customer_contact}</td>
+                              <td className="py-3 px-4 text-slate-500">{wo.document_type}</td>
+                              <td className="py-3 px-4 text-slate-700 font-medium">₹{wo.wo_amount}</td>
+                              <td className="py-3 px-4 text-slate-700">₹{wo.amount_paid}</td>
+                              <td className="py-3 px-4 text-slate-700 font-medium">₹{wo.amount_due}</td>
+                              <td className="py-3 px-4 text-slate-500">
+                                {wo.due_date ? wo.due_date.replace(/-/g, '/') : ''}
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${badgeClass}`}>
+                                  {wo.status}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-2">
+                                  <button className="text-slate-400 hover:text-slate-700 cursor-pointer" title="View details">
+                                    <Eye className="w-4 h-4" />
+                                  </button>
+                                  <button className="text-slate-400 hover:text-slate-700 cursor-pointer" title="Edit status">
+                                    <Pencil className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
                       )}
                     </tbody>
                   </table>
@@ -1422,93 +1411,90 @@ export default function RootDashboard() {
           {/* TAB 4: PRICING LIBRARY VIEW */}
           {activeTab === 'pricing' && (
             <div className="space-y-6 max-w-7xl mx-auto">
-              <div className="bg-white rounded-2xl border border-[#E5E5E5] p-6 shadow-xs space-y-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                  <div>
-                    <h3 className="text-base font-bold text-[#0A0A0A] flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-[#2C75FF]" />
-                      <span>Varma Xerox Document Pricing Library</span>
-                    </h3>
-                    <p className="text-xs text-[#525252]">Configure print & drafting service rates charged per document</p>
-                  </div>
-
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full min-h-[600px]">
+                <div className="flex items-center justify-between p-4 border-b border-slate-100">
+                  <h3 className="text-base font-bold text-slate-900">Price Library</h3>
+                  
                   <div className="flex items-center gap-3">
-                    <button
-                      onClick={handleResetAllPrices}
-                      className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-red-600 hover:bg-red-50 border border-slate-200 rounded-xl transition cursor-pointer"
-                    >
-                      Reset Defaults
-                    </button>
+                    <div className="relative">
+                      <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input 
+                        type="text" 
+                        placeholder="Search document name..."
+                        className="pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm w-64 focus:outline-none focus:border-blue-400"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Pricing Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {(pricingList.length > 0 ? pricingList : getAllPricing()).map((item) => {
-                    const isEditing = editingPriceId === item.id;
-                    return (
-                      <div
-                        key={item.id}
-                        className="bg-white rounded-xl border border-slate-200 hover:border-blue-300 p-4 transition-all shadow-2xs space-y-3 flex flex-col justify-between"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-                              {item.category}
-                            </span>
-                          </div>
-                          <h4 className="font-bold text-sm text-slate-900 mt-1">{item.name}</h4>
-                          <p className="text-xs text-slate-500 mt-0.5">{item.description}</p>
-                        </div>
-
-                        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                          <div>
-                            <span className="text-[10px] font-semibold text-slate-400 uppercase block">Fee Rate</span>
-                            {isEditing ? (
-                              <input
-                                type="number"
-                                value={editingPriceVal}
-                                onChange={(e) => setEditingPriceVal(Number(e.target.value))}
-                                className="w-24 px-2 py-1 text-sm font-bold border border-blue-400 rounded-lg text-slate-900"
-                                autoFocus
-                              />
-                            ) : (
-                              <span className="text-lg font-black text-[#2C75FF]">{formatINR(item.defaultPrice)}</span>
-                            )}
-                          </div>
-
-                          <div>
-                            {isEditing ? (
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => handleSaveDocPrice(item.id, editingPriceVal)}
-                                  className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 cursor-pointer"
+                <div className="flex-1 overflow-y-auto">
+                  <table className="w-full text-left text-sm text-slate-600">
+                    <thead className="bg-white border-b border-slate-200 text-slate-900 font-semibold sticky top-0 z-10">
+                      <tr>
+                        <th className="py-3 px-6 font-semibold">Document Name</th>
+                        <th className="py-3 px-6 font-semibold w-32">Price</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {(pricingList.length > 0 ? pricingList : getAllPricing()).map((item) => {
+                        const isEditing = editingPriceId === item.id;
+                        return (
+                          <tr key={item.id} className="hover:bg-slate-50">
+                            <td className="py-3 px-6 text-slate-500 font-medium">
+                              {item.name}
+                            </td>
+                            <td className="py-3 px-6">
+                              {isEditing ? (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    value={editingPriceVal}
+                                    onChange={(e) => setEditingPriceVal(Number(e.target.value))}
+                                    className="w-16 px-1 py-0.5 text-sm border border-blue-400 rounded"
+                                    autoFocus
+                                    onBlur={() => handleSaveDocPrice(item.id, editingPriceVal)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') handleSaveDocPrice(item.id, editingPriceVal);
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div 
+                                  className="cursor-pointer font-semibold text-slate-700" 
+                                  onClick={() => {
+                                    setEditingPriceId(item.id);
+                                    setEditingPriceVal(item.defaultPrice);
+                                  }}
                                 >
-                                  Save
-                                </button>
-                                <button
-                                  onClick={() => setEditingPriceId(null)}
-                                  className="px-2 py-1 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
-                                >
-                                  ✕
-                                </button>
-                              </div>
-                            ) : (
-                              <button
-                                onClick={() => {
-                                  setEditingPriceId(item.id);
-                                  setEditingPriceVal(item.defaultPrice);
-                                }}
-                                className="px-3 py-1 bg-slate-100 hover:bg-blue-50 hover:text-[#2C75FF] text-slate-700 rounded-lg text-xs font-semibold transition cursor-pointer"
-                              >
-                                Edit Fee
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                                  {formatINR(item.defaultPrice)}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="p-4 border-t border-slate-200 flex items-center justify-between text-sm text-slate-600 bg-white">
+                  <div>Total Costing Items: {pricingList.length || getAllPricing().length}</div>
+                  <div className="flex items-center gap-1">
+                    <button className="px-2 py-1 border border-slate-200 rounded text-slate-400 cursor-pointer hover:bg-slate-50">&lt;</button>
+                    <button className="px-3 py-1 border border-blue-200 bg-blue-50 text-blue-600 rounded font-medium cursor-pointer">1</button>
+                    <button className="px-3 py-1 border border-slate-200 rounded cursor-pointer hover:bg-slate-50">2</button>
+                    <button className="px-3 py-1 border border-slate-200 rounded cursor-pointer hover:bg-slate-50">3</button>
+                    <button className="px-3 py-1 border border-slate-200 rounded cursor-pointer hover:bg-slate-50">4</button>
+                    <button className="px-3 py-1 border border-slate-200 rounded cursor-pointer hover:bg-slate-50">5</button>
+                    <button className="px-2 py-1 border border-slate-200 rounded cursor-pointer hover:bg-slate-50">&gt;</button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>Show per Page:</span>
+                    <select className="border border-slate-200 rounded p-1 text-slate-700 focus:outline-none bg-white">
+                      <option>10</option>
+                      <option>20</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>

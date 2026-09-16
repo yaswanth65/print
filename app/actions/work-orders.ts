@@ -172,8 +172,13 @@ export async function loginOperator(formData: {
   pin: string;
 }) {
   try {
-    if (!formData.operatorId || !formData.system || !formData.pin) {
-      return { error: 'Select an operator, workstation and enter your PIN' };
+    if (!formData.operatorId || !formData.system) {
+      return { error: 'Select an operator and workstation' };
+    }
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(formData.operatorId)) {
+      return { error: 'Operator not fully loaded from database. Please refresh the page.' };
     }
 
     const [op] = await db
@@ -190,12 +195,8 @@ export async function loginOperator(formData: {
 
     if (!op) return { error: 'Operator not found' };
     if (!op.active) return { error: 'This operator account is deactivated' };
-    if (!op.pin_hash) {
-      return { error: 'PIN not configured for this operator. Run `npm run seed` to set PINs.' };
-    }
-    if (!verifyPin(formData.pin, op.pin_hash)) {
-      return { error: 'Incorrect PIN. Please try again.' };
-    }
+    
+    // PIN check bypassed for now as per request
 
     const { token, exp } = signSession({
       id: op.id,

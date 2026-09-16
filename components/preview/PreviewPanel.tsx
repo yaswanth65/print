@@ -74,16 +74,7 @@ export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
         language === 'te' ? 'font-telugu' : ''
       }`}
     >
-      {/* Direct Edit Active Notification Banner */}
-      {isDirectEdit && (
-        <div className="sticky top-0 z-30 bg-amber-500 text-white px-4 py-2 text-xs font-semibold flex items-center justify-between shadow-md print:hidden">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-            <span>DIRECT EDIT MODE ACTIVE: You can click and type directly anywhere inside the document canvas. Formatting and changes are live.</span>
-          </div>
-          <span className="text-[11px] bg-amber-700/60 px-2 py-0.5 rounded">Changes will be exported to Print & Word</span>
-        </div>
-      )}
+      {/* Banner removed as per user request */}
 
       {/* Zoom Container - Centers scaling from top */}
       <div className="flex justify-center min-h-full py-8 print:py-0 print:block" style={{ transformOrigin: 'top center' }}>
@@ -92,33 +83,43 @@ export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
           style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
           className="transition-transform duration-200 ease-out print:transform-none print:m-0 flex flex-col items-center"
         >
-          {/* DYNAMIC PAPER SHELL */}
-          <div
-            ref={containerRef}
-            contentEditable={isDirectEdit}
-            suppressContentEditableWarning
-            onInput={handleDirectInput}
-            style={{
-              width: isIdCard ? undefined : `${paper.widthMm}mm`,
-              minHeight: isIdCard ? undefined : `${paper.heightMm}mm`,
-              paddingLeft: isIdCard ? undefined : `${paper.leftMarginMm}mm`,
-              paddingRight: isIdCard ? undefined : `${paper.rightMarginMm}mm`,
-              paddingTop: isIdCard ? undefined : `${paper.topMarginMm}mm`,
-              paddingBottom: isIdCard ? undefined : `${paper.bottomMarginMm}mm`,
-            }}
-            className={`relative transition-all bg-white ${
-              isIdCard
-                ? ''
-                : 'shadow-2xl rounded-xs print:shadow-none print:w-full print:min-h-full'
-            } ${
-              isDirectEdit ? 'outline-2 outline-dashed outline-amber-400 cursor-text' : ''
-            }`}
-            {...(storedHtml !== undefined && isDirectEdit
-              ? { dangerouslySetInnerHTML: { __html: storedHtml } }
-              : {})}
-          >
-            {/* Render form-mode children (skipped when dangerouslySetInnerHTML is active) */}
-            {!(storedHtml !== undefined && isDirectEdit) && (
+          {storedHtml !== undefined && isDirectEdit ? (
+            <div
+              ref={containerRef}
+              contentEditable={true}
+              suppressContentEditableWarning
+              onInput={handleDirectInput}
+              style={{
+                width: isIdCard ? undefined : `${paper.widthMm}mm`,
+                minHeight: isIdCard ? undefined : `${paper.heightMm}mm`,
+                paddingLeft: isIdCard ? undefined : `${paper.leftMarginMm}mm`,
+                paddingRight: isIdCard ? undefined : `${paper.rightMarginMm}mm`,
+                paddingTop: isIdCard ? undefined : `${paper.topMarginMm}mm`,
+                paddingBottom: isIdCard ? undefined : `${paper.bottomMarginMm}mm`,
+              }}
+              className={`relative transition-all bg-white outline-2 outline-dashed outline-amber-400 cursor-text ${
+                isIdCard ? '' : 'shadow-2xl rounded-xs print:shadow-none print:w-full print:min-h-full'
+              }`}
+              dangerouslySetInnerHTML={{ __html: storedHtml }}
+            />
+          ) : (
+            <div
+              ref={containerRef}
+              contentEditable={isDirectEdit}
+              suppressContentEditableWarning
+              onInput={handleDirectInput}
+              style={{
+                width: isIdCard ? undefined : `${paper.widthMm}mm`,
+                minHeight: isIdCard ? undefined : `${paper.heightMm}mm`,
+                paddingLeft: isIdCard ? undefined : `${paper.leftMarginMm}mm`,
+                paddingRight: isIdCard ? undefined : `${paper.rightMarginMm}mm`,
+                paddingTop: isIdCard ? undefined : `${paper.topMarginMm}mm`,
+                paddingBottom: isIdCard ? undefined : `${paper.bottomMarginMm}mm`,
+              }}
+              className={`relative transition-all bg-white ${
+                isIdCard ? '' : 'shadow-2xl rounded-xs print:shadow-none print:w-full print:min-h-full'
+              } ${isDirectEdit ? 'outline-2 outline-dashed outline-amber-400 cursor-text' : ''}`}
+            >
               <div className="relative z-10 w-full">
                 {activeTemplate === 'cdma_death_correction' && <CdmaDeathCorrectionPreview />}
                 {activeTemplate === 'lease_deed' && <LeaseDeedPreview />}
@@ -134,8 +135,8 @@ export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
                 {activeTemplate === 'bob_gold_loan_indemnity' && <BobGoldLoanIndemnityPreview />}
                 {activeTemplate === 'pan_instant_signature_affidavit' && <PanInstantSignatureAffidavitPreview />}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </main>

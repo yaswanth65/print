@@ -483,7 +483,7 @@ export const Toolbar = ({ printRef }: ToolbarProps) => {
 
           {/* PRINT BUTTON */}
           <button
-            onClick={() => openCustomerModal('print')}
+            onClick={triggerPrint}
             className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#2C75FF] hover:bg-blue-600 text-white rounded-lg text-xs font-semibold transition shadow-xs shrink-0 cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />

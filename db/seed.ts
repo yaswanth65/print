@@ -8,9 +8,6 @@ const OPERATORS_LIST = [
   { id: '3', name: 'Poshetty', role: 'Legal Documentation' },
   { id: '4', name: 'Vennela', role: 'Forms & DTP' },
   { id: '5', name: 'Manikanta', role: 'General Operator' },
-  { id: '6', name: 'Ravi', role: 'DTP Operator' },
-  { id: '7', name: 'Prasad', role: 'Accounts & Print' },
-  { id: '8', name: 'Sunil', role: 'Terminal Operator' },
 ];
 
 async function seed() {
