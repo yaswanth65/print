@@ -412,9 +412,14 @@ export default function RootDashboard() {
   const handleOpenHistoricalDocument = (item: any) => {
     try {
       const snap = typeof item.document_data === 'string' ? JSON.parse(item.document_data) : item.document_data;
-      const { loadDocumentSnapshot } = useDocumentStore.getState();
+      const { loadDocumentSnapshot, setActiveTemplate } = useDocumentStore.getState();
       if (loadDocumentSnapshot && item.document_type) {
-        loadDocumentSnapshot(item.document_type, snap);
+        // Find the correct template ID from the document_type name string if it's the friendly name
+        const docObj = TEMPLATE_DOCUMENTS.find(d => d.name === item.document_type || d.id === item.document_type);
+        const templateId = docObj ? docObj.id : item.document_type;
+        
+        loadDocumentSnapshot(templateId as any, snap);
+        setActiveTemplate(templateId as any);
       }
       router.push('/operator');
     } catch (e) {
