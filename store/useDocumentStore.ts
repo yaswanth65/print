@@ -44,6 +44,7 @@ interface DocumentState {
   removeStatement: (template: TemplateType, index: number) => void;
   updateStatement: (template: TemplateType, index: number, value: string) => void;
   resetSessionState: () => void;
+  loadDocumentSnapshot: (template: TemplateType, snapshot: any) => void;
   addCvWorkExperience: () => void;
   removeCvWorkExperience: (index: number) => void;
   addCvWorkPoint: (workIndex: number, point?: string) => void;
@@ -634,6 +635,14 @@ export const useDocumentStore = create<DocumentState>((set) => ({
         },
       };
     }),
+  loadDocumentSnapshot: (template, snapshot) =>
+    set((state) => ({
+      activeTemplate: template,
+      data: {
+        ...state.data,
+        [template]: snapshot,
+      },
+    })),
   resetSessionState: () =>
     set({
       editMode: 'form',

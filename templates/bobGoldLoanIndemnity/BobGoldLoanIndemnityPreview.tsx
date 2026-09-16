@@ -1,136 +1,98 @@
 import React from 'react';
 import { EditableField } from '@/components/shared/EditableField';
 import { useDocumentStore } from '@/store/useDocumentStore';
+import { formatTeluguValue } from '@/lib/teluguTransliteration';
 import styles from './bobGoldLoanIndemnity.module.css';
 
 export const BobGoldLoanIndemnityPreview: React.FC = () => {
   const { data, language } = useDocumentStore();
-  const d = data.bob_gold_loan_indemnity || {};
-  const t = 'bob_gold_loan_indemnity';
   const isTe = language === 'te';
+  const d = data.bob_gold_loan_indemnity;
+  const t = 'bob_gold_loan_indemnity';
+
+  const branchName = formatTeluguValue(d.branchName, language);
+  const borrowerName = formatTeluguValue(d.borrowerName, language);
+  const relativeName = formatTeluguValue(d.relativeName, language);
+  const address = formatTeluguValue(d.address, language);
 
   return (
     <div className={styles['bob-container']}>
       <div className="document-paper">
-        {/* APPENDIX HEADER */}
-        <div className={styles['bob-appendix']}>
-          {isTe ? 'అనుబంధం IV (APPENDIX IV)' : 'APPENDIX IV'}
+        <div className="text-center font-bold text-xs uppercase tracking-wider mb-2 text-gray-600">
+          APPENDIX - IV
         </div>
-
-        {/* TITLE */}
         <h1 className={styles['bob-title']}>
-          {isTe ? 'నష్టపరిహార హామీ పత్రము (INDEMNITY LETTER)' : 'INDEMNITY LETTER'}
+          {isTe ? 'నష్టపరిహార హామీ పత్రము (ఇండెమ్నిటీ లెటర్)' : 'LETTER OF INDEMNITY'}
         </h1>
-        <div className={styles['bob-subtitle']}>
+        <p className="text-center text-[10pt] font-semibold text-gray-700 mb-6">
           {isTe
-            ? '(బంగారు ఋణ అప్రైజల్ షీట్ దరఖాస్తుదారుని కాపీ పోయిన సందర్భంలో సమర్పించునది)'
-            : '(In respect of lost / misplaced Gold Loan Appraisal Sheet Borrower Copy)'}
+            ? '(బంగారు రుణ మదింపు పత్రము / అప్రైజల్ షీట్ పోయిన సందర్భములో సమర్పించునది)'
+            : '(In respect of issue of duplicate token / Appraisal form / receipt)'}
+        </p>
+
+        <div className="mb-6 space-y-1 text-[10.5pt]">
+          <p className="font-bold">{isTe ? 'స్వీకర్త:' : 'To,'}</p>
+          <p className="font-bold">{isTe ? 'శాఖా మేనేజర్ గారు,' : 'The Branch Manager,'}</p>
+          <p className="font-semibold">{isTe ? 'బ్యాంక్ ఆఫ్ బరోడా,' : 'Bank of Baroda,'}</p>
+          <p><span className="font-bold uppercase">{branchName}</span> {isTe ? 'బ్రాంచ్' : 'Branch.'}</p>
         </div>
 
-        {/* RECIPIENT */}
-        <div className={styles['bob-recipient']}>
-          <div>{isTe ? 'స్వీకర్త / To,' : 'To,'}</div>
-          <div className="font-bold">
-            <EditableField template={t} fieldPath="bankName" value={d.bankName || 'Bank of Baroda'} />
+        <div className="mb-4 text-[10.5pt]">
+          <p className="font-semibold">
+            {isTe ? 'విషయము:' : 'Dear Sir,'}
+          </p>
+          <p className="font-medium text-justify mt-1">
+            {isTe
+              ? 'బంగారు రుణ ఖాతా నెం. ' + d.loanAccountNumber + ' కు సంబంధించిన గోల్డ్ లోన్ అప్రైజల్ షీట్ (రుణగ్రహీత కాపీ) పోయినందున డూప్లికేట్ జారీ మరియు నగలు విడుదల కొరకు నష్టపరిహార పత్రము.'
+              : 'Sub: Loss of Token / Gold Loan Appraisal Form / Receipt in respect of Gold Loan Account No: ' + d.loanAccountNumber}
+          </p>
+        </div>
+
+        {isTe ? (
+          <div className="space-y-4 text-justify text-[10.5pt] leading-relaxed">
+            <p>
+              నేను, <span className="font-bold uppercase">{borrowerName}</span>, తండ్రి/భర్త: <span className="font-bold uppercase">{relativeName}</span>, నివాసం: <span className="font-bold uppercase">{address}</span>, మీ బ్రాంచ్‌లో బంగారు రుణ ఖాతా నెం. <span className="font-bold">{d.loanAccountNumber}</span> ద్వారా తేదీ <span className="font-bold">{d.sanctionDate}</span> నాడు మొత్తం రూ. <span className="font-bold">{d.loanAmount}</span> రుణం పొందియున్నాను.
+            </p>
+            <p>
+              సదరు బంగారు రుణానికి హామీగా నేను మీ బ్యాంకులో <span className="font-bold">{d.ornamentsDescription}</span> (మొత్తం బరువు <span className="font-bold">{d.grossWeight}</span> గ్రాములు) డిపాజిట్ చేసి ఉన్నాను.
+            </p>
+            <p>
+              రుణ మంజూరు సమయంలో బ్యాంకు వారు నాకు అందించిన గోల్డ్ లోన్ అప్రైజల్ షీట్ / రసీదు ప్రమాదవశాత్తూ పోయినదని, ఎంత వెతికినప్పటికీ లభించలేదని ఇందుమూలముగా తెలియజేయుచున్నాను.
+            </p>
+            <p>
+              నేను సదరు బంగారు రుణాన్ని పూర్తిగా చెల్లించి నా బంగారు ఆభరణాలను తిరిగి తీసుకుంటున్న సందర్భంగా, బ్యాంకు వారికి ఎటువంటి ఆర్థిక లేదా చట్టపరమైన నష్టం కలగకుండా నన్ను సంపూర్ణ బాధ్యుడిగా చేస్తూ ఈ నష్టపరిహార హామీ పత్రము (Letter of Indemnity) ను వ్రాసి ఇచ్చుచున్నాను.
+            </p>
           </div>
+        ) : (
+          <div className="space-y-4 text-justify text-[10.5pt] leading-relaxed">
+            <p>
+              I, <EditableField template={t} fieldPath="borrowerName" value={d.borrowerName} className="font-bold uppercase" />,{' '}
+              <EditableField template={t} fieldPath="relation" value={d.relation} />{' '}
+              <EditableField template={t} fieldPath="relativeName" value={d.relativeName} className="font-bold uppercase" />,{' '}
+              residing at <EditableField template={t} fieldPath="address" value={d.address} className="font-bold uppercase" />, have availed a Gold Loan of Rs.{' '}
+              <EditableField template={t} fieldPath="loanAmount" value={d.loanAmount} className="font-bold" /> under Loan Account No.{' '}
+              <EditableField template={t} fieldPath="loanAccountNumber" value={d.loanAccountNumber} className="font-bold" /> dated{' '}
+              <EditableField template={t} fieldPath="sanctionDate" value={d.sanctionDate} className="font-bold" /> from your branch against pledge of gold ornaments described as{' '}
+              <EditableField template={t} fieldPath="ornamentsDescription" value={d.ornamentsDescription} className="font-bold" /> weighing{' '}
+              <EditableField template={t} fieldPath="grossWeight" value={d.grossWeight} className="font-bold" /> grams.
+            </p>
+            <p>
+              I state that the original Appraisal Form / Token / Receipt issued to me at the time of pledge has been lost / misplaced by me and cannot be found despite diligent search.
+            </p>
+            <p>
+              In consideration of the Bank agreeing to release the pledged ornaments to me without production of original appraisal form, I hereby agree to indemnify and keep indemnified the Bank against all claims, actions, losses, damages, costs and expenses whatsoever that the Bank may incur by reason of releasing the pledged gold.
+            </p>
+          </div>
+        )}
+
+        <div className="mt-10 pt-6 border-t border-gray-300 grid grid-cols-2 gap-8">
           <div>
-            <EditableField template={t} fieldPath="branchName" value={d.branchName || 'Armoor Branch'} />
+            <p className="text-[10pt] font-semibold">{isTe ? 'తేదీ:' : 'Date:'} <EditableField template={t} fieldPath="letterDate" value={d.letterDate} className="font-bold" /></p>
+            <p className="text-[10pt] font-semibold">{isTe ? 'స్థలము:' : 'Place:'} <span className="font-bold uppercase">{branchName}</span></p>
           </div>
-          <div>
-            <EditableField template={t} fieldPath="district" value={d.district || 'Dist. Nizamabad'} />
-          </div>
-        </div>
-
-        {/* PARAGRAPH 1 */}
-        <p className={styles['bob-paragraph']}>
-          {isTe ? (
-            <>
-              బ్యాంక్ ఆఫ్ బరోడా <EditableField template={t} fieldPath="branchName" value={d.branchName || 'ARMOOR'} className="font-bold uppercase" /> శాఖ ద్వారా తేదీ{' '}
-              <EditableField template={t} fieldPath="sanctionDate" value={d.sanctionDate || '12-05-2024'} className="font-bold" /> న మంజూరు చేయబడిన బంగారు ఋణం ఖాతా సంఖ్య{' '}
-              <EditableField template={t} fieldPath="accountNo" value={d.accountNo || '12340100098765'} className="font-bold" /> మొత్తం రూ.{' '}
-              <EditableField template={t} fieldPath="loanAmount" value={d.loanAmount || '1,50,000'} className="font-bold" />/- (రూపాయలు{' '}
-              <EditableField template={t} fieldPath="loanAmountWords" value={d.loanAmountWords || 'One Lakh Fifty Thousand'} className="font-bold" /> మాత్రమే) ఋణము పొందిన నా పేరిట{' '}
-              <EditableField template={t} fieldPath="borrowerName" value={d.borrowerName || 'CHINTHA RAMESH'} className="font-bold uppercase" />, తండ్రి{' '}
-              <EditableField template={t} fieldPath="fatherName" value={d.fatherName || 'CHINTHA SAYANNA'} className="font-bold uppercase" />, నివాసం{' '}
-              <EditableField template={t} fieldPath="village" value={d.village || 'Govindpet'} className="font-bold uppercase" /> గ్రామము,{' '}
-              <EditableField template={t} fieldPath="mandal" value={d.mandal || 'Armoor'} className="font-bold uppercase" /> మండలము, జిల్లా నిజామాబాద్, తెలంగాణ లో{' '}
-              <EditableField template={t} fieldPath="durationMonths" value={d.durationMonths || '12'} className="font-bold" /> నెలల కాలపరిమితికి ఇవ్వబడినది.
-            </>
-          ) : (
-            <>
-              Whereas Bank of Baroda <EditableField template={t} fieldPath="branchName" value={d.branchName || 'ARMOOR'} className="font-bold uppercase" /> branch on{' '}
-              <EditableField template={t} fieldPath="sanctionDate" value={d.sanctionDate || '12-05-2024'} className="font-bold" /> sanctioned a gold loan bearing A/c No.{' '}
-              <EditableField template={t} fieldPath="accountNo" value={d.accountNo || '12340100098765'} className="font-bold" /> for Rs.{' '}
-              <EditableField template={t} fieldPath="loanAmount" value={d.loanAmount || '1,50,000'} className="font-bold" /> (Rupees{' '}
-              <EditableField template={t} fieldPath="loanAmountWords" value={d.loanAmountWords || 'One Lakh Fifty Thousand'} className="font-bold" /> only) to me{' '}
-              <EditableField template={t} fieldPath="borrowerName" value={d.borrowerName || 'CHINTHA RAMESH'} className="font-bold uppercase" /> S/o.{' '}
-              <EditableField template={t} fieldPath="fatherName" value={d.fatherName || 'CHINTHA SAYANNA'} className="font-bold uppercase" /> R/o.{' '}
-              <EditableField template={t} fieldPath="village" value={d.village || 'Govindpet'} className="font-bold uppercase" /> village,{' '}
-              <EditableField template={t} fieldPath="mandal" value={d.mandal || 'Armoor'} className="font-bold uppercase" /> Mandal, Dist.Nizamabad, Telangana for{' '}
-              <EditableField template={t} fieldPath="durationMonths" value={d.durationMonths || '12'} className="font-bold" /> months.
-            </>
-          )}
-        </p>
-
-        {/* PARAGRAPH 2 */}
-        <p className={styles['bob-paragraph']}>
-          {isTe ? (
-            <>
-              సదరు బంగారు ఋణ అప్రైజల్ షీట్ రశీదు నా వద్ద ప్రమాదవశాత్తు పోయినది / కనిపించకుండా పోయినది. సదరు రశీదు ఎవరికీ దుర్వినియోగం చేయబడలేదని మరియు ఎటువంటి ఇతర లావాదేవీలకు ఉపయోగించలేదని నా ద్వారా హామీ ఇవ్వడమైనది. ఒకవేళ భవిష్యత్తులో సదరు గోల్డ్ లోన్ అప్రైజల్ షీట్ దొరికినచో తక్షణమే బ్యాంకుకు తిరిగి అప్పగించబడుతుందని హామీ ఇస్తున్నాను.
-            </>
-          ) : (
-            <>
-              And whereas the said Gold Loan Appraisal Sheet has been lost or misplaced and whereas upon my/our representation that the said Gold Loan Appraisal Sheet Receipt has been lost/misplaced and has not been misutilised or dealt with in any manner and undertaking that if the said Gold Loan Appraisal Sheet is found, it shall be returned to you.
-            </>
-          )}
-        </p>
-
-        {/* PARAGRAPH 3 */}
-        <p className={styles['bob-paragraph']}>
-          {isTe ? (
-            <>
-              ఇప్పుడు నేను / మేము <span className="font-bold uppercase"><EditableField template={t} fieldPath="borrowerName" value={d.borrowerName || 'CHINTHA RAMESH'} /></span>, నా/మా మరియు నా/మా వారసులు, చట్టబద్ధమైన ప్రతినిధుల తరపున బ్యాంకు వారికి ఎటువంటి నష్టములు, క్లెయిములు, డిమాండ్లు, చట్టపరమైన చర్యలు లేదా ఖర్చులు అసలు గోల్డ్ లోన్ అప్రైజల్ షీట్ సమర్పించనందున కలగకుండా ఎల్లప్పుడూ బ్యాంకును నష్టపరిహార రహితులుగా (Indemnified) ఉంచుతామని ఇందుమూలముగా పూర్తి బాధ్యతతో అంగీకరిస్తున్నాము.
-            </>
-          ) : (
-            <>
-              Now, I/we <span className="font-bold uppercase"><EditableField template={t} fieldPath="borrowerName" value={d.borrowerName || 'CHINTHA RAMESH'} /></span>, S/o <EditableField template={t} fieldPath="fatherName" value={d.fatherName || 'CHINTHA SAYANNA'} className="font-bold uppercase" /> in consideration of the premises for myself/ourselves and my/our respective heirs, executors and administrators jointly and severally agree and undertake from time to time and at all times hereafter to indemnify and keep you indemnified from and against all losses, claims, demands, actions, liabilities and expenses which may be made or taken against or incurred by you by reason of the non-submission of the original Gold Loan Appraisal Sheet.
-            </>
-          )}
-        </p>
-
-        {/* DATED LINE */}
-        <div className={styles['bob-dated']}>
-          {isTe ? (
-            <>
-              తేదీ: ఆర్మూర్ నందు ఈ <EditableField template={t} fieldPath="datedDay" value={d.datedDay || '18'} className="font-bold" /> వ రోజు,{' '}
-              <EditableField template={t} fieldPath="datedMonth" value={d.datedMonth || 'September'} className="font-bold" />,{' '}
-              <EditableField template={t} fieldPath="datedYear" value={d.datedYear || '2026'} className="font-bold" />.
-            </>
-          ) : (
-            <>
-              Dated at Armoor this <EditableField template={t} fieldPath="datedDay" value={d.datedDay || '18'} className="font-bold" /> day of{' '}
-              <EditableField template={t} fieldPath="datedMonth" value={d.datedMonth || 'September'} className="font-bold" />,{' '}
-              <EditableField template={t} fieldPath="datedYear" value={d.datedYear || '2026'} className="font-bold" />.
-            </>
-          )}
-        </div>
-
-        {/* SIGNATURES AND WITNESSES */}
-        <div className={styles['bob-closing-block']}>
-          <div className={styles['bob-witness']}>
-            <div className="font-bold">{isTe ? 'సాక్షులు (Witness):' : 'Witness:'}</div>
-            <div><EditableField template={t} fieldPath="witness1" value={d.witness1 || '1. '} /></div>
-            <div><EditableField template={t} fieldPath="witness2" value={d.witness2 || '2. '} /></div>
-          </div>
-
-          <div className={styles['bob-borrower-sign']}>
-            <div className="mb-14">{isTe ? 'భవదీయుడు / Yours faithfully,' : 'Yours faithfully,'}</div>
-            <div className="font-bold uppercase">
-              <EditableField template={t} fieldPath="borrowerName" value={d.borrowerName || 'CHINTHA RAMESH'} />
-            </div>
-            <div className="text-xs text-slate-500 mt-1">
-              {isTe ? 'ఋణగ్రహీత సంతకము / Signature(s) of Borrower(s)' : 'Signature(s) of Borrower(s)'}
-            </div>
+          <div className="text-right">
+            <p className="font-bold uppercase">{borrowerName}</p>
+            <p className="text-[9pt] text-gray-600">{isTe ? 'రుణగ్రహీత సంతకము' : 'Signature of Borrower'}</p>
           </div>
         </div>
       </div>

@@ -39,6 +39,7 @@ import {
   Lock,
   Check
 } from 'lucide-react';
+import { getAllPricing, saveDocumentPrice, resetDocumentPrices, formatINR } from '@/lib/pricing';
 import { getWorkOrders, createWorkOrder, updateWorkOrderStatus, getOperators, loginOperator, logoutOperator, getSession } from '@/app/actions/work-orders';
 
 interface WorkOrder {
@@ -293,7 +294,19 @@ export default function RootDashboard() {
   const [switchLoading, setSwitchLoading] = useState(false);
 
   // Navigation tab
-  const [activeTab, setActiveTab] = useState<'files' | 'orders'>('files');
+  const [activeTab, setActiveTab] = useState<'files' | 'orders' | 'history' | 'pricing'>('files');
+
+  // History State
+  const [historyList, setHistoryList] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historySearch, setHistorySearch] = useState('');
+  const [historyOperatorFilter, setHistoryOperatorFilter] = useState('All');
+
+  // Pricing State
+  const [pricingList, setPricingList] = useState<any[]>([]);
+  const [pricingSearch, setPricingSearch] = useState('');
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [editingPriceVal, setEditingPriceVal] = useState<number>(100);
 
   // Files View Controls
   const [fileViewMode, setFileViewMode] = useState<'list' | 'grid'>('list');
@@ -369,6 +382,58 @@ export default function RootDashboard() {
     document.addEventListener('mousedown', handleOutside);
     return () => document.removeEventListener('mousedown', handleOutside);
   }, []);
+
+  const loadHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (historySearch) params.set('search', historySearch);
+      if (historyOperatorFilter !== 'All') params.set('operator', historyOperatorFilter);
+      const res = await fetch('/api/history?' + params.toString());
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        setHistoryList(json.data);
+      }
+    } catch (err) {
+      console.error('Failed to load history:', err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'history') {
+      loadHistory();
+    } else if (activeTab === 'pricing') {
+      setPricingList(getAllPricing());
+    }
+  }, [activeTab, historyOperatorFilter]);
+
+  const handleOpenHistoricalDocument = (item: any) => {
+    try {
+      const snap = typeof item.document_data === 'string' ? JSON.parse(item.document_data) : item.document_data;
+      const { loadDocumentSnapshot } = useDocumentStore.getState();
+      if (loadDocumentSnapshot && item.document_type) {
+        loadDocumentSnapshot(item.document_type, snap);
+      }
+      router.push('/operator');
+    } catch (e) {
+      router.push('/operator');
+    }
+  };
+
+  const handleSaveDocPrice = (docId: string, val: number) => {
+    saveDocumentPrice(docId, val);
+    setPricingList(getAllPricing());
+    setEditingPriceId(null);
+  };
+
+  const handleResetAllPrices = () => {
+    if (confirm('Reset all document prices to default rates?')) {
+      resetDocumentPrices();
+      setPricingList(getAllPricing());
+    }
+  };
 
   // Fetch Work Orders from Neon Database
   const loadOrders = React.useCallback(async () => {
@@ -715,6 +780,30 @@ export default function RootDashboard() {
               }`}
             >
               <ClipboardList className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={() => setActiveTab('history')}
+              title="Print & Document Save History"
+              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
+                activeTab === 'history'
+                  ? 'bg-blue-50 text-[#2C75FF]'
+                  : 'text-[#525252] hover:text-[#0A0A0A] hover:bg-slate-100'
+              }`}
+            >
+              <Clock className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={() => setActiveTab('pricing')}
+              title="Document Pricing Library"
+              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
+                activeTab === 'pricing'
+                  ? 'bg-blue-50 text-[#2C75FF]'
+                  : 'text-[#525252] hover:text-[#0A0A0A] hover:bg-slate-100'
+              }`}
+            >
+              <DollarSign className="w-5 h-5" />
             </button>
 
             <button
@@ -1211,6 +1300,220 @@ export default function RootDashboard() {
               </div>
             </div>
           )}
+
+          {/* TAB 3: DOCUMENT HISTORY VIEW */}
+          {activeTab === 'history' && (
+            <div className="space-y-6 max-w-7xl mx-auto">
+              <div className="bg-white rounded-2xl border border-[#E5E5E5] p-6 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-base font-bold text-[#0A0A0A] flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-[#2C75FF]" />
+                      <span>Print & Document Save History</span>
+                    </h3>
+                    <p className="text-xs text-[#525252]">Comprehensive audit log of all printed and saved customer documents</p>
+                  </div>
+
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="relative flex-1 sm:w-64">
+                      <Search className="w-4 h-4 text-[#525252] absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        placeholder="Search customer, phone, doc..."
+                        value={historySearch}
+                        onChange={(e) => setHistorySearch(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && loadHistory()}
+                        className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-[#E5E5E5] bg-white focus:outline-none focus:border-[#2C75FF]"
+                      />
+                    </div>
+
+                    <select
+                      value={historyOperatorFilter}
+                      onChange={(e) => setHistoryOperatorFilter(e.target.value)}
+                      className="px-3 py-1.5 text-xs rounded-lg border border-[#E5E5E5] bg-white text-[#0A0A0A] font-semibold focus:outline-none"
+                    >
+                      <option value="All">All Operators</option>
+                      {operatorsList.map((op) => (
+                        <option key={op.id} value={op.name}>
+                          {op.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      onClick={loadHistory}
+                      className="p-2 rounded-lg border border-[#E5E5E5] hover:bg-slate-50 text-[#525252] transition-colors cursor-pointer"
+                      title="Refresh History"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${historyLoading ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-[#EBEBEB]">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#F7F7F7] border-b border-[#EBEBEB] text-[#525252] font-semibold">
+                      <tr>
+                        <th className="py-3 px-4">Date & Time</th>
+                        <th className="py-3 px-4">Customer</th>
+                        <th className="py-3 px-4">Document Type</th>
+                        <th className="py-3 px-4">Operator / Terminal</th>
+                        <th className="py-3 px-4">Amount</th>
+                        <th className="py-3 px-4">Action Status</th>
+                        <th className="py-3 px-4 text-right">Re-open</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#EBEBEB]">
+                      {historyList.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className="text-center py-12 text-[#525252]">
+                            {historyLoading ? 'Loading history records...' : 'No historical print/save records found'}
+                          </td>
+                        </tr>
+                      ) : (
+                        historyList.map((item) => (
+                          <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                              {item.created_at ? new Date(item.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : 'Just now'}
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="font-bold text-[#0A0A0A]">{item.customer_name}</div>
+                              <div className="text-[11px] text-[#525252] font-mono">{item.customer_contact}</div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="font-semibold text-slate-800">{item.document_name || item.document_type}</span>
+                            </td>
+                            <td className="py-3 px-4 text-[#525252]">
+                              <div>{item.operator_name}</div>
+                              <div className="text-[10px] text-slate-400">{item.system_name}</div>
+                            </td>
+                            <td className="py-3 px-4 font-bold text-emerald-600">
+                              ₹{item.amount || 0}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span
+                                className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                  item.status === 'Printed'
+                                    ? 'bg-blue-50 text-[#2C75FF] border border-blue-200'
+                                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                }`}
+                              >
+                                {item.status || 'Saved'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <button
+                                onClick={() => handleOpenHistoricalDocument(item)}
+                                className="px-3 py-1 bg-slate-100 hover:bg-[#2C75FF] hover:text-white rounded-lg text-slate-700 font-semibold transition text-[11px] cursor-pointer"
+                              >
+                                Load in Editor
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: PRICING LIBRARY VIEW */}
+          {activeTab === 'pricing' && (
+            <div className="space-y-6 max-w-7xl mx-auto">
+              <div className="bg-white rounded-2xl border border-[#E5E5E5] p-6 shadow-xs space-y-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-base font-bold text-[#0A0A0A] flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-[#2C75FF]" />
+                      <span>Varma Xerox Document Pricing Library</span>
+                    </h3>
+                    <p className="text-xs text-[#525252]">Configure print & drafting service rates charged per document</p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleResetAllPrices}
+                      className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-red-600 hover:bg-red-50 border border-slate-200 rounded-xl transition cursor-pointer"
+                    >
+                      Reset Defaults
+                    </button>
+                  </div>
+                </div>
+
+                {/* Pricing Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {(pricingList.length > 0 ? pricingList : getAllPricing()).map((item) => {
+                    const isEditing = editingPriceId === item.id;
+                    return (
+                      <div
+                        key={item.id}
+                        className="bg-white rounded-xl border border-slate-200 hover:border-blue-300 p-4 transition-all shadow-2xs space-y-3 flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                              {item.category}
+                            </span>
+                          </div>
+                          <h4 className="font-bold text-sm text-slate-900 mt-1">{item.name}</h4>
+                          <p className="text-xs text-slate-500 mt-0.5">{item.description}</p>
+                        </div>
+
+                        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] font-semibold text-slate-400 uppercase block">Fee Rate</span>
+                            {isEditing ? (
+                              <input
+                                type="number"
+                                value={editingPriceVal}
+                                onChange={(e) => setEditingPriceVal(Number(e.target.value))}
+                                className="w-24 px-2 py-1 text-sm font-bold border border-blue-400 rounded-lg text-slate-900"
+                                autoFocus
+                              />
+                            ) : (
+                              <span className="text-lg font-black text-[#2C75FF]">{formatINR(item.defaultPrice)}</span>
+                            )}
+                          </div>
+
+                          <div>
+                            {isEditing ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleSaveDocPrice(item.id, editingPriceVal)}
+                                  className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 cursor-pointer"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => setEditingPriceId(null)}
+                                  className="px-2 py-1 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setEditingPriceId(item.id);
+                                  setEditingPriceVal(item.defaultPrice);
+                                }}
+                                className="px-3 py-1 bg-slate-100 hover:bg-blue-50 hover:text-[#2C75FF] text-slate-700 rounded-lg text-xs font-semibold transition cursor-pointer"
+                              >
+                                Edit Fee
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
         </main>
       </div>
 

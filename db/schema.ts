@@ -31,3 +31,17 @@ export const operators = pgTable('operators', {
   active: boolean('active').default(true),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });
+
+export const documentHistory = pgTable('document_history', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  customer_name: varchar('customer_name', { length: 255 }).notNull(),
+  customer_contact: varchar('customer_contact', { length: 50 }).notNull(),
+  document_type: varchar('document_type', { length: 100 }).notNull(),
+  document_name: varchar('document_name', { length: 255 }).notNull(),
+  operator_name: varchar('operator_name', { length: 100 }).default('Operator'),
+  system_name: varchar('system_name', { length: 50 }).default('System 1'),
+  amount: integer('amount').default(0),
+  status: varchar('status', { length: 50 }).default('Saved'),
+  document_data: text('document_data'),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
+});
