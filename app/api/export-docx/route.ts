@@ -15,6 +15,7 @@ import {
   WidthType,
   BorderStyle,
 } from 'docx';
+import { SESSION_COOKIE, verifySessionToken } from '@/lib/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -31,7 +32,40 @@ function escapeXml(str: any): string {
     .replace(/'/g, '&apos;');
 }
 
+// Word frequently splits a template token like {{district}} across multiple
+// <w:t> runs (e.g. `{{dist</w:t><w:t>rict}}`). A plain replaceAll on the XML
+// would silently miss such tokens. This rebuilds the token char-by-char while
+// allowing a `<w:t>` run boundary between every character, and collapses the
+// matched segment back into a single run.
+const RUN_GAP = String.raw`</w:t><w:t[^>]*>`;
+const TAG_GAP = String.raw`(?:${RUN_GAP})?`;
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function replaceSplitToken(xml: string, token: string, value: string): string {
+  const escaped = escapeRegExp(token);
+  const pattern = escaped.split('').join(TAG_GAP);
+  return xml.replace(new RegExp(pattern, 'g'), () => value);
+}
+
+function hydrateTemplateXml(xml: string, replaceMap: Record<string, string>): string {
+  const keys = Object.keys(replaceMap).sort((a, b) => b.length - a.length);
+  let out = xml;
+  for (const key of keys) {
+    out = replaceSplitToken(out, key, replaceMap[key]);
+  }
+  return out;
+}
+
 export async function POST(req: NextRequest) {
+  // Auth gate: only a valid signed operator session may export documents.
+  const sessionToken = req.cookies.get(SESSION_COOKIE)?.value;
+  if (!verifySessionToken(sessionToken)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   let body: {
     template?: string;
     values?: Record<string, any>;
@@ -145,9 +179,7 @@ export async function POST(req: NextRequest) {
     replaceMap['{{box_delivery_2}}'] = del.includes('Local') && !del.includes('Nonlocal') ? '☑' : '☐';
     replaceMap['{{box_delivery_3}}'] = del.includes('Nonlocal') ? '☑' : '☐';
 
-    for (const [k, v] of Object.entries(replaceMap)) {
-      xml = xml.replaceAll(k, v);
-    }
+    xml = hydrateTemplateXml(xml, replaceMap);
 
     zip.file('word/document.xml', xml);
     const output = await zip.generateAsync({ type: 'nodebuffer' });
@@ -202,9 +234,7 @@ export async function POST(req: NextRequest) {
       '{{lesseeSignature}}': escapeXml(values.lesseeName),
     };
 
-    for (const [k, v] of Object.entries(replaceMap)) {
-      xml = xml.replaceAll(k, v);
-    }
+    xml = hydrateTemplateXml(xml, replaceMap);
 
     zip.file('word/document.xml', xml);
     const output = await zip.generateAsync({ type: 'nodebuffer' });
@@ -246,9 +276,7 @@ export async function POST(req: NextRequest) {
       '{{declarationPlace}}': escapeXml(values.declarationPlace || 'Armoor'),
     };
 
-    for (const [k, v] of Object.entries(replaceMap)) {
-      xml = xml.replaceAll(k, v);
-    }
+    xml = hydrateTemplateXml(xml, replaceMap);
 
     zip.file('word/document.xml', xml);
     const output = await zip.generateAsync({ type: 'nodebuffer' });
@@ -292,9 +320,7 @@ export async function POST(req: NextRequest) {
       '{{affidavitPlace}}': escapeXml(values.affidavitPlace || 'ARMOOR'),
     };
 
-    for (const [k, v] of Object.entries(replaceMap)) {
-      xml = xml.replaceAll(k, v);
-    }
+    xml = hydrateTemplateXml(xml, replaceMap);
 
     zip.file('word/document.xml', xml);
     const output = await zip.generateAsync({ type: 'nodebuffer' });
@@ -303,6 +329,148 @@ export async function POST(req: NextRequest) {
       headers: {
         'Content-Type': DOCX_MIME,
         'Content-Disposition': 'attachment; filename="SINGLE_WOMEN_ONTARI_MAHILA_AFFIDAVIT.docx"',
+        'Cache-Control': 'no-store',
+      },
+    });
+  }
+
+
+  // Bank of Baroda Gold Loan Lost Appraisal Sheet Indemnity
+  if (template === 'bob_gold_loan_indemnity') {
+    const doc = new Document({
+      sections: [{
+        children: [
+          new Paragraph({
+            text: 'APPENDIX IV',
+            heading: HeadingLevel.HEADING_3,
+            spacing: { after: 120 },
+          }),
+          new Paragraph({
+            text: 'INDEMNITY LETTER',
+            heading: HeadingLevel.TITLE,
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 60 },
+          }),
+          new Paragraph({
+            text: '(In respect of lost / misplaced Gold Loan Appraisal Sheet Borrower Copy)',
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 240 },
+          }),
+          new Paragraph({
+            text: 'To,',
+            spacing: { after: 40 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: `${values.bankName || 'Bank of Baroda'}\n`, bold: true }),
+              new TextRun({ text: `${values.branchName || 'Armoor Branch'}\n` }),
+              new TextRun({ text: `${values.district || 'Dist. Nizamabad'}` }),
+            ],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            text: `Whereas Bank of Baroda ${(values.branchName || 'ARMOOR').toUpperCase()} branch on ${values.sanctionDate || '12-05-2024'} sanctioned a gold loan bearing A/c No. ${values.accountNo || ''} for Rs. ${values.loanAmount || ''} (Rupees ${values.loanAmountWords || ''} only) to me ${values.borrowerName || ''} S/o. ${values.fatherName || ''} R/o. ${values.village || ''} village, ${values.mandal || ''} Mandal, Dist.Nizamabad, Telangana for ${values.durationMonths || '12'} months.`,
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: 160 },
+          }),
+          new Paragraph({
+            text: 'And whereas the said Gold Loan Appraisal Sheet has been lost or misplaced and whereas upon my/our representation that the said Gold Loan Appraisal Sheet Receipt has been lost/misplaced and has not been misutilised or dealt with in any manner and undertaking that if the said Gold Loan Appraisal Sheet is found, it shall be returned to you.',
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: 160 },
+          }),
+          new Paragraph({
+            text: `Now, I/we ${values.borrowerName || ''} S/o ${values.fatherName || ''} in consideration of the premises for myself/ourselves and my/our respective heirs, executors and administrators jointly and severally agree and undertake from time to time and at all times hereafter to indemnify and keep you indemnified from and against all losses, claims, demands, actions, liabilities and expenses which may be made or taken against or incurred by you by reason of the non-submission of the original Gold Loan Appraisal Sheet.`,
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            text: `Dated at Armoor this ${values.datedDay || '18'} day of ${values.datedMonth || 'September'}, ${values.datedYear || '2026'}.`,
+            spacing: { after: 240 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Yours faithfully,\n\n\n', bold: true }),
+              new TextRun({ text: `${values.borrowerName || ''}\n`, bold: true }),
+              new TextRun({ text: 'Signature(s) of Borrower(s)', italics: true }),
+            ],
+            alignment: AlignmentType.RIGHT,
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Witness:\n', bold: true }),
+              new TextRun({ text: `${values.witness1 || '1.'}\n` }),
+              new TextRun({ text: `${values.witness2 || '2.'}` }),
+            ],
+            spacing: { after: 100 },
+          }),
+        ],
+      }],
+    });
+
+    const output = await Packer.toBuffer(doc);
+    return new NextResponse(new Uint8Array(output), {
+      headers: {
+        'Content-Type': DOCX_MIME,
+        'Content-Disposition': 'attachment; filename="BOB_GOLD_LOAN_APPRAISAL_LOST_INDEMNITY.docx"',
+        'Cache-Control': 'no-store',
+      },
+    });
+  }
+
+  // PAN Card Instant Signature Loan Affidavit
+  if (template === 'pan_instant_signature_affidavit') {
+    const doc = new Document({
+      sections: [{
+        children: [
+          new Paragraph({
+            text: 'AFFIDAVIT-CUM-DECLARATION',
+            heading: HeadingLevel.TITLE,
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 240 },
+          }),
+          new Paragraph({
+            text: `I, ${values.name || 'BANDAMIDI AJAY'} SON OF ${values.fatherName || 'BANDAMIDI SATHYAM'}, aged about ${values.age || '30'} Years, R/o.H.No.${values.hNo || '2-100'}, ${values.village || 'GOVINDPET'} Village of ${values.mandal || 'ARMOOR'} Mandal, Dist. Nizambad, Telangana State- ${values.pincode || '503224'}, do hereby solemnly affirm and state on oath as follows:-`,
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: 180 },
+          }),
+          new Paragraph({
+            text: `1) I submit that I am holder of PAN Card No. ${values.panNumber || 'DRWPA3601K'} and when I applied for Pan card, the concerned agent applied Instant Pan card, as such when I obtained Pan card, my signature in not affixed in my said pan card. And the Signature put by me in pan card copy is originally signed by me only. I am holder of Aadhar Card No. ${values.aadharNumber || 'XXXX XXXX 6627'}.`,
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: 160 },
+          }),
+          new Paragraph({
+            text: '2) I submit that the Signature put by me on the Loan application form is same put by me on my said PAN Card copy, which are originally signed by me. The signature on this affidavit, PAN Card and loan application form are genuine one and are pertain to me only. Kindly treat my signature on this affidavit, Loan application are same as in PAN Card and do the needful to me please. I used to put my Signature as signed by me on this affidavit and in banks and others also.',
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: 180 },
+          }),
+          new Paragraph({
+            text: 'Therefore I humbly request the kind authority to please accept this affidavit and do the needful to me please. That the contents of the affidavit are true and correct to the best of my knowledge and belief and that I am personally held responsible for any future complications.',
+            alignment: AlignmentType.JUSTIFIED,
+            spacing: { after: 240 },
+          }),
+          new Paragraph({
+            text: 'DEPONENT',
+            alignment: AlignmentType.RIGHT,
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({ text: 'Sworn and signed before me\n', bold: true }),
+              new TextRun({ text: `On ${values.swornDate || '13-01-2026'} at ${values.swornPlace || 'ARMOOR'}.\n\n\n` }),
+              new TextRun({ text: `(${values.name || 'BANDAMIDI AJAY'})`, bold: true }),
+            ],
+            spacing: { after: 100 },
+          }),
+        ],
+      }],
+    });
+
+    const output = await Packer.toBuffer(doc);
+    return new NextResponse(new Uint8Array(output), {
+      headers: {
+        'Content-Type': DOCX_MIME,
+        'Content-Disposition': 'attachment; filename="PAN_INSTANT_SIGNATURE_AFFIDAVIT.docx"',
         'Cache-Control': 'no-store',
       },
     });

@@ -28,6 +28,7 @@ import {
 import { useReactToPrint } from 'react-to-print';
 import type { TemplateType } from '@/store/useDocumentStore';
 import { PAPER_FORMATS, PaperFormatId } from '@/lib/paper-formats';
+import { logoutOperator } from '@/app/actions/work-orders';
 
 interface ToolbarProps {
   printRef: React.RefObject<HTMLDivElement | null>;
@@ -47,6 +48,8 @@ export const TEMPLATE_CATEGORIES = [
     name: 'Legal Affidavits',
     icon: ScrollText,
     items: [
+      { id: 'bob_gold_loan_indemnity', label: 'Bank of Baroda Gold Loan Appraisal Lost Indemnity', badge: 'BOB' },
+      { id: 'pan_instant_signature_affidavit', label: 'PAN Card Instant Signature Loan Affidavit', badge: 'PAN' },
       { id: 'single_women_affidavit', label: 'Single Women (Ontari Mahila) Affidavit', badge: 'Welfare' },
       { id: 'sbi_alias_general', label: 'SBI Alias Declaration Affidavit', badge: 'Bank' },
       { id: 'ssc_memo_affidavit', label: 'SSC Memo Lost Affidavit', badge: 'Education' },
@@ -132,7 +135,7 @@ export const Toolbar = ({ printRef }: ToolbarProps) => {
 
   // Switch User / Logout Handler
   const handleSwitchUser = () => {
-    localStorage.removeItem('varma_xerox_session');
+    logoutOperator().catch(() => {});
     router.push('/');
   };
 
@@ -165,6 +168,8 @@ export const Toolbar = ({ printRef }: ToolbarProps) => {
       else if (activeTemplate === 'lease_deed') fname = 'LEASE_DEED.docx';
       else if (activeTemplate === 'sbi_alias_general') fname = 'SBI_ALIAS_DECLARATION_AFFIDAVIT.docx';
       else if (activeTemplate === 'single_women_affidavit') fname = 'SINGLE_WOMEN_ONTARI_MAHILA_AFFIDAVIT.docx';
+      else if (activeTemplate === 'bob_gold_loan_indemnity') fname = 'BOB_GOLD_LOAN_APPRAISAL_LOST_INDEMNITY.docx';
+      else if (activeTemplate === 'pan_instant_signature_affidavit') fname = 'PAN_INSTANT_SIGNATURE_AFFIDAVIT.docx';
       else fname = `${activeTemplate}.docx`;
       a.download = fname;
       document.body.appendChild(a);

@@ -1,5 +1,10 @@
 import { pgTable, uuid, varchar, integer, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 
+export const workOrderSeq = pgTable('work_order_seq', {
+  id: integer('id').primaryKey(),
+  seq: integer('seq').notNull(),
+});
+
 export const workOrders = pgTable('work_orders', {
   id: uuid('id').primaryKey().defaultRandom(),
   wo_number: varchar('wo_number', { length: 50 }).notNull().unique(),
@@ -21,6 +26,8 @@ export const operators = pgTable('operators', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 100 }).notNull(),
   system_name: varchar('system_name', { length: 50 }).notNull(),
+  role: varchar('role', { length: 50 }).default('Operator'),
+  pin_hash: varchar('pin_hash', { length: 300 }),
   active: boolean('active').default(true),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow(),
 });

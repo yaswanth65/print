@@ -1,0 +1,60 @@
+.pan-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.pan-stamp-space {
+  width: 100%;
+  height: 90px;
+  border: 2px dashed #cbd5e1;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.pan-title {
+  font-size: 15pt;
+  font-weight: 700;
+  text-decoration: underline;
+  text-align: center;
+  letter-spacing: 1px;
+  margin-bottom: 28px;
+}
+
+.pan-paragraph {
+  text-align: justify;
+  line-height: 1.65;
+  margin-bottom: 18px;
+  font-size: 11pt;
+}
+
+.pan-clause {
+  text-align: justify;
+  line-height: 1.65;
+  margin-bottom: 18px;
+  font-size: 11pt;
+  padding-left: 24px;
+  text-indent: -24px;
+}
+
+.pan-closing {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 40px;
+}
+
+.pan-notary {
+  font-size: 11pt;
+  line-height: 1.5;
+}
+
+.pan-deponent {
+  text-align: right;
+  font-size: 11pt;
+}

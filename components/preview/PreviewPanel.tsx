@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { useDocumentStore } from '@/store/useDocumentStore';
 import { PAPER_FORMATS } from '@/lib/paper-formats';
 import { RentAgreementPreview } from '@/templates/rentAgreement/RentAgreementPreview';
@@ -14,6 +14,8 @@ import { SbiAliasGeneralPreview } from '@/templates/sbiAliasGeneral/SbiAliasGene
 import { SingleWomenAffidavitPreview } from '@/templates/singleWomenAffidavit/SingleWomenAffidavitPreview';
 import { CvResumePreview } from '@/templates/cvResume/CvResumePreview';
 import { IdentityCardPreview } from '@/templates/identityCard/IdentityCardPreview';
+import { BobGoldLoanIndemnityPreview } from '@/templates/bobGoldLoanIndemnity/BobGoldLoanIndemnityPreview';
+import { PanInstantSignatureAffidavitPreview } from '@/templates/panInstantSignatureAffidavit/PanInstantSignatureAffidavitPreview';
 import { Stamp, ShieldAlert } from 'lucide-react';
 
 export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
@@ -31,12 +33,40 @@ export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
   const paper = PAPER_FORMATS[paperFormat] || PAPER_FORMATS.a4;
   const isIdCard = activeTemplate === 'identity_card';
 
-  const directEditRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const capturedRef = useRef(false);
 
-  // When switching to direct mode or active template changes, sync directContent
-  const handleDirectInput = (e: React.FormEvent<HTMLDivElement>) => {
-    const html = e.currentTarget.innerHTML;
-    setDirectContent(activeTemplate, html);
+  const storedHtml = directContent[activeTemplate] as string | undefined;
+
+  // When entering direct edit or switching templates, capture the rendered
+  // DOM into the store so that subsequent re-renders (zoom change, etc.)
+  // don't wipe the user's edits.
+  useEffect(() => {
+    if (!isDirectEdit) {
+      capturedRef.current = false;
+      return;
+    }
+    if (storedHtml !== undefined) {
+      capturedRef.current = true;
+      return;
+    }
+    // First time entering direct mode for this template – snapshot the
+    // live DOM so edits have a backing store value from the start.
+    if (!capturedRef.current && containerRef.current) {
+      capturedRef.current = true;
+      // Defer to next microtask so layout is complete.
+      queueMicrotask(() => {
+        if (containerRef.current) {
+          setDirectContent(activeTemplate, containerRef.current.innerHTML);
+        }
+      });
+    }
+  }, [isDirectEdit, activeTemplate, storedHtml, setDirectContent]);
+
+  const handleDirectInput = () => {
+    if (containerRef.current) {
+      setDirectContent(activeTemplate, containerRef.current.innerHTML);
+    }
   };
 
   return (
@@ -65,7 +95,7 @@ export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
         >
           {/* DYNAMIC PAPER SHELL */}
           <div
-            ref={directEditRef}
+            ref={containerRef}
             contentEditable={isDirectEdit}
             suppressContentEditableWarning
             onInput={handleDirectInput}
@@ -84,52 +114,62 @@ export const PreviewPanel = forwardRef<HTMLDivElement, {}>((props, ref) => {
             } ${
               isDirectEdit ? 'outline-2 outline-dashed outline-amber-400 cursor-text' : ''
             }`}
+            {...(storedHtml !== undefined && isDirectEdit
+              ? { dangerouslySetInnerHTML: { __html: storedHtml } }
+              : {})}
           >
-            {/* 1. BOND / STAMP PAPER TOP EXCLUSION ZONE */}
-            {(paperFormat === 'bond' || paperFormat === 'stamp_paper') && !isIdCard && (
-              <div
-                style={{ height: `${paper.headerReservedMm}mm` }}
-                className="w-full border-2 border-dashed border-red-300 bg-red-50/50 rounded flex flex-col items-center justify-center text-red-600 mb-4 select-none print:opacity-0"
-              >
-                <ShieldAlert className="w-6 h-6 mb-1 text-red-500" />
-                <span className="text-xs font-bold uppercase tracking-widest text-center">
-                  [ PRE-PRINTED GOVERNMENT NON-JUDICIAL STAMP PAPER REGION ]
-                </span>
-                <span className="text-[10px] text-red-500/80 mt-0.5">
-                  Untouched space for Rs. 50 / 100 Government Stamp Motif & Seals (Content prints strictly below)
-                </span>
-              </div>
-            )}
+            {/* Render form-mode children (skipped when dangerouslySetInnerHTML is active) */}
+            {!(storedHtml !== undefined && isDirectEdit) && (
+              <>
+                {/* 1. BOND / STAMP PAPER TOP EXCLUSION ZONE */}
+                {(paperFormat === 'bond' || paperFormat === 'stamp_paper') && !isIdCard && (
+                  <div
+                    style={{ height: `${paper.headerReservedMm}mm` }}
+                    className="w-full border-2 border-dashed border-red-300 bg-red-50/50 rounded flex flex-col items-center justify-center text-red-600 mb-4 select-none print:opacity-0"
+                  >
+                    <ShieldAlert className="w-6 h-6 mb-1 text-red-500" />
+                    <span className="text-xs font-bold uppercase tracking-widest text-center">
+                      [ PRE-PRINTED GOVERNMENT NON-JUDICIAL STAMP PAPER REGION ]
+                    </span>
+                    <span className="text-[10px] text-red-500/80 mt-0.5">
+                      Untouched space for Rs. 50 / 100 Government Stamp Motif & Seals (Content prints strictly below)
+                    </span>
+                  </div>
+                )}
 
-            {/* 2. ACTIVE DOCUMENT PREVIEW CONTENT */}
-            <div className="relative z-10 w-full">
-              {activeTemplate === 'cdma_death_correction' && <CdmaDeathCorrectionPreview />}
-              {activeTemplate === 'lease_deed' && <LeaseDeedPreview />}
-              {activeTemplate === 'sbi_alias_general' && <SbiAliasGeneralPreview />}
-              {activeTemplate === 'single_women_affidavit' && <SingleWomenAffidavitPreview />}
-              {activeTemplate === 'ssc_memo_affidavit' && <SscMemoAffidavitPreview />}
-              {activeTemplate === 'rent_agreement' && <RentAgreementPreview />}
-              {activeTemplate === 'affidavit' && <AffidavitPreview />}
-              {activeTemplate === 'sale_deed' && <SaleDeedPreview />}
-              {activeTemplate === 'plot_agreement' && <PlotAgreementPreview />}
-              {activeTemplate === 'cv_resume' && <CvResumePreview />}
-              {activeTemplate === 'identity_card' && <IdentityCardPreview />}
-            </div>
+                {/* 2. ACTIVE DOCUMENT PREVIEW CONTENT */}
+                <div className="relative z-10 w-full">
+                  {activeTemplate === 'cdma_death_correction' && <CdmaDeathCorrectionPreview />}
+                  {activeTemplate === 'lease_deed' && <LeaseDeedPreview />}
+                  {activeTemplate === 'sbi_alias_general' && <SbiAliasGeneralPreview />}
+                  {activeTemplate === 'single_women_affidavit' && <SingleWomenAffidavitPreview />}
+                  {activeTemplate === 'ssc_memo_affidavit' && <SscMemoAffidavitPreview />}
+                  {activeTemplate === 'rent_agreement' && <RentAgreementPreview />}
+                  {activeTemplate === 'affidavit' && <AffidavitPreview />}
+                  {activeTemplate === 'sale_deed' && <SaleDeedPreview />}
+                  {activeTemplate === 'plot_agreement' && <PlotAgreementPreview />}
+                  {activeTemplate === 'cv_resume' && <CvResumePreview />}
+                  {activeTemplate === 'identity_card' && <IdentityCardPreview />}
+                  {activeTemplate === 'bob_gold_loan_indemnity' && <BobGoldLoanIndemnityPreview />}
+                  {activeTemplate === 'pan_instant_signature_affidavit' && <PanInstantSignatureAffidavitPreview />}
+                </div>
 
-            {/* 3. LEDGER FORMAT BOTTOM RESERVED STAMP ZONE */}
-            {paperFormat === 'ledger' && !isIdCard && (
-              <div
-                style={{ height: `${paper.footerReservedMm}mm` }}
-                className="w-full border-2 border-dashed border-indigo-300 bg-indigo-50/50 rounded flex flex-col items-center justify-center text-indigo-700 mt-6 select-none print:opacity-0"
-              >
-                <Stamp className="w-6 h-6 mb-1 text-indigo-600" />
-                <span className="text-xs font-bold uppercase tracking-widest text-center">
-                  [ RESERVED FOR ADVOCATE SEAL / NOTARY REGISTER STAMP / OFFICIAL SIGNATURES ]
-                </span>
-                <span className="text-[10px] text-indigo-600/80 mt-0.5">
-                  Physical Stamp & Endorsement Area (Preserved at bottom of Ledger page)
-                </span>
-              </div>
+                {/* 3. LEDGER FORMAT BOTTOM RESERVED STAMP ZONE */}
+                {paperFormat === 'ledger' && !isIdCard && (
+                  <div
+                    style={{ height: `${paper.footerReservedMm}mm` }}
+                    className="w-full border-2 border-dashed border-indigo-300 bg-indigo-50/50 rounded flex flex-col items-center justify-center text-indigo-700 mt-6 select-none print:opacity-0"
+                  >
+                    <Stamp className="w-6 h-6 mb-1 text-indigo-600" />
+                    <span className="text-xs font-bold uppercase tracking-widest text-center">
+                      [ RESERVED FOR ADVOCATE SEAL / NOTARY REGISTER STAMP / OFFICIAL SIGNATURES ]
+                    </span>
+                    <span className="text-[10px] text-indigo-600/80 mt-0.5">
+                      Physical Stamp & Endorsement Area (Preserved at bottom of Ledger page)
+                    </span>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

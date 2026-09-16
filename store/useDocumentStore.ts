@@ -1,7 +1,7 @@
 import { PaperFormatId } from '@/lib/paper-formats';
 import { create } from 'zustand';
 
-export type TemplateType = 'rent_agreement' | 'affidavit' | 'sale_deed' | 'plot_agreement' | 'ssc_memo_affidavit' | 'cdma_death_correction' | 'lease_deed' | 'sbi_alias_general' | 'single_women_affidavit' | 'cv_resume' | 'identity_card';
+export type TemplateType = 'rent_agreement' | 'affidavit' | 'sale_deed' | 'plot_agreement' | 'ssc_memo_affidavit' | 'cdma_death_correction' | 'lease_deed' | 'sbi_alias_general' | 'single_women_affidavit' | 'cv_resume' | 'identity_card' | 'bob_gold_loan_indemnity' | 'pan_instant_signature_affidavit';
 export type EditMode = 'form' | 'direct';
 
 export type IdCardSide = 'front' | 'back' | 'both';
@@ -27,6 +27,8 @@ interface DocumentState {
     single_women_affidavit: any;
     cv_resume: any;
     identity_card: any;
+    bob_gold_loan_indemnity: any;
+    pan_instant_signature_affidavit: any;
   };
   setActiveTemplate: (template: TemplateType) => void;
   setEditMode: (mode: EditMode) => void;
@@ -535,6 +537,43 @@ const initialIdentityCard = {
   }
 };
 
+
+const initialBobGoldLoanIndemnity = {
+  bankName: 'Bank of Baroda',
+  branchName: 'Armoor Branch',
+  district: 'Dist. Nizamabad',
+  sanctionDate: '12-05-2024',
+  accountNo: '12340100098765',
+  loanAmount: '1,50,000',
+  loanAmountWords: 'One Lakh Fifty Thousand',
+  borrowerName: 'CHINTHA RAMESH',
+  fatherName: 'CHINTHA SAYANNA',
+  village: 'Govindpet',
+  mandal: 'Armoor',
+  durationMonths: '12',
+  datedDay: '18',
+  datedMonth: 'September',
+  datedYear: '2026',
+  witness1: '1. G. Suresh, Armoor',
+  witness2: '2. M. Rajesh, Govindpet',
+};
+
+const initialPanInstantSignatureAffidavit = {
+  name: 'BANDAMIDI AJAY',
+  fatherName: 'BANDAMIDI SATHYAM',
+  age: '30',
+  hNo: '2-100',
+  village: 'GOVINDPET',
+  mandal: 'ARMOOR',
+  district: 'Nizambad',
+  state: 'Telangana State',
+  pincode: '503224',
+  panNumber: 'DRWPA3601K',
+  aadharNumber: 'XXXX XXXX 6627',
+  swornDate: '13-01-2026',
+  swornPlace: 'ARMOOR',
+};
+
 export const useDocumentStore = create<DocumentState>((set) => ({
   activeTemplate: 'rent_agreement',
   editMode: 'form',
@@ -695,6 +734,8 @@ export const useDocumentStore = create<DocumentState>((set) => ({
     single_women_affidavit: initialSingleWomenAffidavit,
     cv_resume: initialCvResume,
     identity_card: initialIdentityCard,
+    bob_gold_loan_indemnity: initialBobGoldLoanIndemnity,
+    pan_instant_signature_affidavit: initialPanInstantSignatureAffidavit,
   },
   setActiveTemplate: (template) => set({ activeTemplate: template }),
   setEditMode: (mode) => set({ editMode: mode }),

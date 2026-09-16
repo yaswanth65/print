@@ -1,8 +1,16 @@
 import { config } from 'dotenv';
 config({ path: '.env' });
 import { neon } from '@neondatabase/serverless';
+import { randomBytes, scryptSync } from 'node:crypto';
 
 const sql = neon(process.env.DATABASE_URL);
+
+// Deterministic scrypt hash stored as salt:hash (matches lib/auth.ts hashPin)
+function hashPin(pin) {
+  const salt = randomBytes(16).toString('hex');
+  const hash = scryptSync(pin, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
 
 async function init() {
   console.log('Connecting to Neon DB...');
@@ -25,30 +33,61 @@ async function init() {
     );
   `;
 
-  await sql`
+await sql`
     CREATE TABLE IF NOT EXISTS operators (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       name VARCHAR(100) NOT NULL,
       system_name VARCHAR(50) NOT NULL,
+      role VARCHAR(50) DEFAULT 'Operator',
+      pin_hash VARCHAR(300),
       active BOOLEAN DEFAULT TRUE,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
   `;
 
-  // Seed operators if empty
+  // Add auth columns if upgrading an existing database
+  await sql`ALTER TABLE operators ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'Operator'`;
+  await sql`ALTER TABLE operators ADD COLUMN IF NOT EXISTS pin_hash VARCHAR(300)`;
+
+  // Atomic sequence row used by the app to generate unique WO numbers
+  await sql`
+    CREATE TABLE IF NOT EXISTS work_order_seq (
+      id INTEGER PRIMARY KEY,
+      seq INTEGER NOT NULL
+    );
+  `;
+  const maxWo = await sql`SELECT coalesce(max(substring(wo_number from 'WO-([0-9]+)')::integer), 2046) AS m FROM work_orders`;
+  const seqStart = parseInt(maxWo[0].m) || 2046;
+  await sql`
+    INSERT INTO work_order_seq (id, seq) VALUES (1, ${seqStart})
+    ON CONFLICT (id) DO UPDATE SET seq = GREATEST(work_order_seq.seq, ${seqStart})
+  `;
+
+// Seed operators if empty
   const existingOps = await sql`SELECT count(*) FROM operators`;
   if (parseInt(existingOps[0].count) === 0) {
     const ops = [
-      { name: 'Pradhyumn Dhondi', system_name: 'System 1' },
-      { name: 'Suresh Varma', system_name: 'System 2' },
-      { name: 'Rajesh Kumar', system_name: 'System 3' },
-      { name: 'Anitha Reddy', system_name: 'System 4' },
-      { name: 'Kiran Rao', system_name: 'System 5' }
+      { name: 'Pradhyumn Dhondi', system_name: 'System 1', role: 'Chief Operator', pin: '1001' },
+      { name: 'Suresh Varma', system_name: 'System 2', role: 'Senior Operator', pin: '1002' },
+      { name: 'Rajesh Kumar', system_name: 'System 3', role: 'Legal Documentation', pin: '1003' },
+      { name: 'Anitha Reddy', system_name: 'System 4', role: 'Forms & DTP', pin: '1004' },
+      { name: 'Kiran Rao', system_name: 'System 5', role: 'General Operator', pin: '1005' }
     ];
     for (const op of ops) {
-      await sql`INSERT INTO operators (name, system_name) VALUES (${op.name}, ${op.system_name})`;
+      const pinHash = hashPin(op.pin);
+      await sql`INSERT INTO operators (name, system_name, role, pin_hash) VALUES (${op.name}, ${op.system_name}, ${op.role}, ${pinHash})`;
+      console.log(`operator "${op.name}" PIN = ${op.pin}`);
     }
     console.log('Operators seeded!');
+  } else {
+    // Backfill PINs for operators created before the auth upgrade
+    const withoutPin = await sql`SELECT * FROM operators WHERE pin_hash IS NULL`;
+    for (const op of withoutPin) {
+      const pin = '1234';
+      const pinHash = hashPin(pin);
+      await sql`UPDATE operators SET pin_hash = ${pinHash} WHERE id = ${op.id}`;
+      console.log(`backfilled PIN for "${op.name}" (default PIN = ${pin})`);
+    }
   }
 
   // Seed initial realistic work orders if none

@@ -1652,6 +1652,124 @@ const IdentityCardForm = () => {
   );
 };
 
+
+// Bank of Baroda Gold Loan Indemnity Form
+const BobGoldLoanIndemnityForm = () => {
+  const { data, updateData } = useDocumentStore();
+  const { register, watch, reset } = useForm({
+    defaultValues: data.bob_gold_loan_indemnity,
+  });
+
+  useEffect(() => {
+    reset(data.bob_gold_loan_indemnity);
+  }, [data.bob_gold_loan_indemnity, reset]);
+
+  const formValues = watch();
+  const formValuesString = JSON.stringify(formValues);
+
+  useEffect(() => {
+    updateData('bob_gold_loan_indemnity', JSON.parse(formValuesString));
+  }, [formValuesString, updateData]);
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div>
+        <SectionHeader number="01" title="Bank & Loan Details" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Bank Name" name="bankName" register={register} />
+          <InputField label="Branch Name" name="branchName" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Sanction Date" name="sanctionDate" register={register} />
+          <InputField label="A/c Number" name="accountNo" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Loan Amount (₹)" name="loanAmount" register={register} />
+          <InputField label="Amount in Words" name="loanAmountWords" register={register} />
+        </div>
+        <InputField label="Duration (Months)" name="durationMonths" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="02" title="Borrower Particulars" />
+        <InputField label="Borrower Name" name="borrowerName" register={register} />
+        <InputField label="Father's Name" name="fatherName" register={register} />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Village" name="village" register={register} />
+          <InputField label="Mandal" name="mandal" register={register} />
+        </div>
+        <InputField label="District" name="district" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="03" title="Execution Date & Witnesses" />
+        <div className="grid grid-cols-3 gap-3">
+          <InputField label="Day" name="datedDay" register={register} />
+          <InputField label="Month" name="datedMonth" register={register} />
+          <InputField label="Year" name="datedYear" register={register} />
+        </div>
+        <InputField label="Witness 1" name="witness1" register={register} />
+        <InputField label="Witness 2" name="witness2" register={register} />
+      </div>
+    </div>
+  );
+};
+
+// PAN Card Instant Signature Loan Affidavit Form
+const PanInstantSignatureAffidavitForm = () => {
+  const { data, updateData } = useDocumentStore();
+  const { register, watch, reset } = useForm({
+    defaultValues: data.pan_instant_signature_affidavit,
+  });
+
+  useEffect(() => {
+    reset(data.pan_instant_signature_affidavit);
+  }, [data.pan_instant_signature_affidavit, reset]);
+
+  const formValues = watch();
+  const formValuesString = JSON.stringify(formValues);
+
+  useEffect(() => {
+    updateData('pan_instant_signature_affidavit', JSON.parse(formValuesString));
+  }, [formValuesString, updateData]);
+
+  return (
+    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div>
+        <SectionHeader number="01" title="Deponent Personal Info" />
+        <InputField label="Full Name" name="name" register={register} />
+        <InputField label="Father's Name" name="fatherName" register={register} />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Age" name="age" register={register} />
+          <InputField label="H.No" name="hNo" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Village" name="village" register={register} />
+          <InputField label="Mandal" name="mandal" register={register} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="District" name="district" register={register} />
+          <InputField label="Pin Code" name="pincode" register={register} />
+        </div>
+      </div>
+
+      <div>
+        <SectionHeader number="02" title="PAN & Aadhaar Identifiers" />
+        <InputField label="PAN Card Number" name="panNumber" register={register} />
+        <InputField label="Aadhaar Card Number" name="aadharNumber" register={register} />
+      </div>
+
+      <div>
+        <SectionHeader number="03" title="Sworn Date & Place" />
+        <div className="grid grid-cols-2 gap-3">
+          <InputField label="Sworn Date" name="swornDate" register={register} />
+          <InputField label="Place" name="swornPlace" register={register} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const EditorPanel = () => {
   const { activeTemplate } = useDocumentStore();
 
@@ -1672,6 +1790,8 @@ export const EditorPanel = () => {
       {activeTemplate === 'single_women_affidavit' && <SingleWomenAffidavitForm />}
       {activeTemplate === 'cv_resume' && <CvResumeForm />}
       {activeTemplate === 'identity_card' && <IdentityCardForm />}
+      {activeTemplate === 'bob_gold_loan_indemnity' && <BobGoldLoanIndemnityForm />}
+      {activeTemplate === 'pan_instant_signature_affidavit' && <PanInstantSignatureAffidavitForm />}
 
       <div className="p-3 border-t border-slate-100 bg-slate-50 flex-shrink-0">
         <p className="text-[10px] text-slate-400 text-center italic">Auto-saving local changes...</p>

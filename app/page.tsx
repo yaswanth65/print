@@ -36,9 +36,10 @@ import {
   UserCheck,
   ChevronDown,
   RefreshCw,
+  Lock,
   Check
 } from 'lucide-react';
-import { getWorkOrders, createWorkOrder, updateWorkOrderStatus } from '@/app/actions/work-orders';
+import { getWorkOrders, createWorkOrder, updateWorkOrderStatus, getOperators, loginOperator, logoutOperator, getSession } from '@/app/actions/work-orders';
 
 interface WorkOrder {
   id: string;
@@ -79,6 +80,28 @@ const TEMPLATE_DOCUMENTS = [
     icon: User,
     badge: 'Photo Upload',
     desc: 'Professional engineering/general curriculum vitae with photo, work history & skills.',
+  },
+  {
+    id: 'bob_gold_loan_indemnity' as TemplateType,
+    name: 'BOB Gold Loan Appraisal Sheet Lost Indemnity Letter',
+    category: 'Banking / Legal Affidavits',
+    folder: 'Bank Affidavits',
+    pages: '1 Page',
+    lastModified: '16 Sep, 2026',
+    icon: ScrollText,
+    badge: 'Bank of Baroda',
+    desc: 'Appendix IV lost / misplaced gold loan appraisal sheet borrower copy indemnity letter.',
+  },
+  {
+    id: 'pan_instant_signature_affidavit' as TemplateType,
+    name: 'PAN Card Instant Signature Loan Affidavit',
+    category: 'Banking / Legal Affidavits',
+    folder: 'Affidavits',
+    pages: '1 Page',
+    lastModified: '16 Sep, 2026',
+    icon: ScrollText,
+    badge: 'PAN / Loan',
+    desc: 'Affidavit-cum-declaration for instant PAN card without signature matching loan application.',
   },
   {
     id: 'single_women_affidavit' as TemplateType,
@@ -195,6 +218,8 @@ const NAVBAR_MENU_CATEGORIES = [
     name: 'Legal Affidavits',
     icon: ScrollText,
     items: [
+      { id: 'bob_gold_loan_indemnity' as TemplateType, label: 'BOB Gold Loan Lost Appraisal Indemnity', badge: 'BOB' },
+      { id: 'pan_instant_signature_affidavit' as TemplateType, label: 'PAN Card Instant Signature Loan Affidavit', badge: 'PAN' },
       { id: 'single_women_affidavit' as TemplateType, label: 'Single Women (Ontari Mahila) Affidavit', badge: 'Welfare' },
       { id: 'sbi_alias_general' as TemplateType, label: 'SBI Alias Declaration Affidavit', badge: 'Bank' },
       { id: 'ssc_memo_affidavit' as TemplateType, label: 'SSC Memo Lost Affidavit', badge: 'Education' },
@@ -248,7 +273,24 @@ export default function RootDashboard() {
   const [currentOperator, setCurrentOperator] = useState<{ id: string; name: string; system: string; role?: string } | null>(null);
   const [isAuthLoaded, setIsAuthLoaded] = useState(false);
   const [selectedSystem, setSelectedSystem] = useState('System 1');
-  const [selectedOperatorId, setSelectedOperatorId] = useState('1');
+  const [selectedOperatorId, setSelectedOperatorId] = useState('');
+  const [pin, setPin] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Operators from the database (getOperators). Falls back to the static
+  // catalogue only when the DB is unavailable/empty.
+  const [dbOperators, setDbOperators] = useState<Array<{ id: string; name: string; role: string | null; system_name: string | null }>>([]);
+  const [operatorsLoadError, setOperatorsLoadError] = useState('');
+  const operatorsList = dbOperators.length > 0 ? dbOperators : OPERATORS_LIST;
+
+  // Switch User Modal State
+  const [isSwitchUserOpen, setIsSwitchUserOpen] = useState(false);
+  const [switchTargetSystem, setSwitchTargetSystem] = useState('System 1');
+  const [switchTargetOperatorId, setSwitchTargetOperatorId] = useState('');
+  const [switchPin, setSwitchPin] = useState('');
+  const [switchError, setSwitchError] = useState('');
+  const [switchLoading, setSwitchLoading] = useState(false);
 
   // Navigation tab
   const [activeTab, setActiveTab] = useState<'files' | 'orders'>('files');
@@ -262,11 +304,6 @@ export default function RootDashboard() {
   const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
   const [navMenuSearch, setNavMenuSearch] = useState('');
   const navMenuRef = useRef<HTMLDivElement>(null);
-
-  // Switch User Modal State
-  const [isSwitchUserOpen, setIsSwitchUserOpen] = useState(false);
-  const [switchTargetSystem, setSwitchTargetSystem] = useState('System 1');
-  const [switchTargetOperatorId, setSwitchTargetOperatorId] = useState('1');
 
   // Work Orders State
   const [workOrdersList, setWorkOrdersList] = useState<WorkOrder[]>([]);
@@ -294,23 +331,32 @@ export default function RootDashboard() {
     internal_notes: '',
   });
 
-  // Initialize Session from localStorage
+  // Initialize Session from httpOnly cookie (server-verified)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('varma_xerox_session');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setCurrentOperator(parsed);
-        setSelectedSystem(parsed.system || 'System 1');
-        setSelectedOperatorId(parsed.id || '1');
-        setSwitchTargetSystem(parsed.system || 'System 1');
-        setSwitchTargetOperatorId(parsed.id || '1');
+    (async () => {
+      try {
+        const [sessionRes, opsRes] = await Promise.all([getSession(), getOperators()]);
+        if (sessionRes.authenticated && sessionRes.data) {
+          setCurrentOperator(sessionRes.data);
+          setSelectedSystem(sessionRes.data.system || 'System 1');
+        }
+        if (opsRes.success && opsRes.data) {
+          const ops = opsRes.data as any[];
+          setDbOperators(ops);
+          // Pre-select first operator if none selected yet
+          setSelectedOperatorId((prev) => {
+            if (prev || ops.length === 0) return prev;
+            return ops[0].id;
+          });
+        } else {
+          setOperatorsLoadError(opsRes.error || 'Could not load operators');
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsAuthLoaded(true);
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsAuthLoaded(true);
-    }
+    })();
   }, []);
 
   // Close nav menu on outside click
@@ -325,7 +371,7 @@ export default function RootDashboard() {
   }, []);
 
   // Fetch Work Orders from Neon Database
-  const loadOrders = async () => {
+  const loadOrders = React.useCallback(async () => {
     setOrdersLoading(true);
     try {
       const res = await getWorkOrders({
@@ -343,50 +389,79 @@ export default function RootDashboard() {
     } finally {
       setOrdersLoading(false);
     }
-  };
+  }, [ordersSearch, ordersStatusFilter]);
 
   useEffect(() => {
-    if (activeTab === 'orders' || currentOperator) {
-      loadOrders();
-    }
-  }, [activeTab, ordersStatusFilter]);
+    const canLoad = activeTab === 'orders' || currentOperator;
+    if (!canLoad) return;
+    // Debounce when the user is typing a search query; fire immediately
+    // when only filters or tab change.
+    const delay = ordersSearch.trim() ? 350 : 0;
+    const t = setTimeout(() => { loadOrders(); }, delay);
+    return () => clearTimeout(t);
+  }, [activeTab, ordersStatusFilter, ordersSearch, currentOperator, loadOrders]);
 
-  // Login handler
-  const handleLogin = (e: React.FormEvent) => {
+  // Login handler (server-side PIN verification + signed session cookie)
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const op = OPERATORS_LIST.find((o) => o.id === selectedOperatorId) || OPERATORS_LIST[0];
-    const session = {
-      id: op.id,
-      name: op.name,
-      role: op.role,
-      system: selectedSystem,
-    };
-    setCurrentOperator(session);
-    localStorage.setItem('varma_xerox_session', JSON.stringify(session));
+    const op = operatorsList.find((o) => o.id === selectedOperatorId) || operatorsList[0];
+    if (!op) {
+      setLoginError('No operators available. Run `npm run seed` to populate the database.');
+      return;
+    }
+    setLoginLoading(true);
+    setLoginError('');
+    try {
+      const res = await loginOperator({ operatorId: op.id, system: selectedSystem, pin });
+      if (res.success && res.data) {
+        setCurrentOperator(res.data);
+        setPin('');
+      } else {
+        setLoginError(res.error || 'Failed to sign in');
+      }
+    } catch (err: any) {
+      setLoginError(err.message || 'Failed to sign in');
+    } finally {
+      setLoginLoading(false);
+    }
   };
 
   // Logout handler
   const handleLogout = () => {
-    localStorage.removeItem('varma_xerox_session');
+    logoutOperator().catch(() => {});
     setCurrentOperator(null);
     setIsSwitchUserOpen(false);
+    setSwitchPin('');
+    setSwitchError('');
     resetSessionState();
   };
 
-  // Switch User handler
-  const handleSwitchUserConfirm = () => {
-    const op = OPERATORS_LIST.find((o) => o.id === switchTargetOperatorId) || OPERATORS_LIST[0];
-    const session = {
-      id: op.id,
-      name: op.name,
-      role: op.role,
-      system: switchTargetSystem,
-    };
-    // Clear session-specific state without deleting database work orders or saved templates
-    resetSessionState();
-    setCurrentOperator(session);
-    localStorage.setItem('varma_xerox_session', JSON.stringify(session));
-    setIsSwitchUserOpen(false);
+  // Switch User handler (re-authenticates with the target operator's PIN)
+  const handleSwitchUserConfirm = async () => {
+    const op = operatorsList.find((o) => o.id === switchTargetOperatorId);
+    if (!op) {
+      setSwitchError('Select an operator');
+      return;
+    }
+    setSwitchLoading(true);
+    setSwitchError('');
+    try {
+      const res = await loginOperator({ operatorId: op.id, system: switchTargetSystem, pin: switchPin });
+      if (res.success && res.data) {
+        resetSessionState();
+        setCurrentOperator(res.data);
+        setSelectedSystem(res.data.system);
+        setIsSwitchUserOpen(false);
+        setSwitchPin('');
+        setSwitchError('');
+      } else {
+        setSwitchError(res.error || 'Failed to switch');
+      }
+    } catch (err: any) {
+      setSwitchError(err.message || 'Failed to switch');
+    } finally {
+      setSwitchLoading(false);
+    }
   };
 
   // Open Template in Simulator / Operator Workspace
@@ -506,13 +581,18 @@ export default function RootDashboard() {
               </div>
             </div>
 
-            {/* OPERATOR SELECTION (8 OPERATORS) */}
+            {/* OPERATOR SELECTION FROM DATABASE */}
             <div>
               <label className="block text-xs font-bold text-[#525252] uppercase tracking-wider mb-2">
-                Select Operator (8 Operators)
+                Select Operator ({operatorsList.length})
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[290px] overflow-y-auto pr-1">
-                {OPERATORS_LIST.map((op) => (
+                {operatorsList.length === 0 && (
+                  <div className="col-span-2 p-3 rounded-xl border border-amber-200 bg-amber-50 text-xs text-amber-700">
+                    {operatorsLoadError || 'No operators found. Run `npm run seed` to populate the database.'}
+                  </div>
+                )}
+                {operatorsList.map((op) => (
                   <div
                     key={op.id}
                     onClick={() => setSelectedOperatorId(op.id)}
@@ -533,7 +613,7 @@ export default function RootDashboard() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-bold text-[#0A0A0A] truncate">{op.name}</div>
-                      <div className="text-[10px] text-[#525252] truncate">{op.role}</div>
+                      <div className="text-[10px] text-[#525252] truncate">{op.role || 'Operator'}</div>
                     </div>
                     {selectedOperatorId === op.id && (
                       <Check className="w-4 h-4 text-[#2C75FF] flex-shrink-0" />
@@ -543,18 +623,53 @@ export default function RootDashboard() {
               </div>
             </div>
 
+            {/* PIN ENTRY */}
+            <div>
+              <label className="block text-xs font-bold text-[#525252] uppercase tracking-wider mb-2">
+                Operator PIN
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-[#525252] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  autoComplete="current-password"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  placeholder="Enter your 4-digit PIN"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-[#E5E5E5] focus:outline-none focus:border-[#2C75FF] focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+            </div>
+
+            {loginError && (
+              <div className="p-3 rounded-xl border border-red-200 bg-red-50 text-xs font-semibold text-red-600">
+                {loginError}
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full py-3.5 px-4 bg-[#2C75FF] hover:bg-blue-600 text-white font-semibold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
+              disabled={loginLoading || !pin || !selectedOperatorId}
+              className="w-full py-3.5 px-4 bg-[#2C75FF] hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 mt-4 cursor-pointer"
             >
-              <span>Launch Terminal on {selectedSystem}</span>
-              <ChevronRight className="w-4 h-4" />
+              {loginLoading ? (
+                <span>Verifying PIN...</span>
+              ) : (
+                <>
+                  <span>Launch Terminal on {selectedSystem}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
 
           <div className="mt-6 pt-5 border-t border-[#E5E5E5] text-center text-xs text-[#525252] flex items-center justify-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             Central Database connected to Neon PostgreSQL
+            {process.env.NODE_ENV !== 'production' && (
+              <span className="text-[10px] text-slate-400">(seed PINs 1001-1005 / default 1234)</span>
+            )}
           </div>
         </div>
       </div>
@@ -1110,7 +1225,7 @@ export default function RootDashboard() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-slate-900">Switch Operator</h3>
-                  <p className="text-xs text-slate-500">Change terminal or active operator</p>
+                  <p className="text-xs text-slate-500">Re-authenticate with the target operator&apos;s PIN</p>
                 </div>
               </div>
               <button
@@ -1148,8 +1263,8 @@ export default function RootDashboard() {
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                   Select Operator
                 </label>
-                <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
-                  {OPERATORS_LIST.map((op) => (
+                <div className="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+                  {operatorsList.map((op) => (
                     <div
                       key={op.id}
                       onClick={() => setSwitchTargetOperatorId(op.id)}
@@ -1165,11 +1280,32 @@ export default function RootDashboard() {
                         </div>
                         <span className="text-xs text-slate-800">{op.name}</span>
                       </div>
-                      <span className="text-[10px] text-slate-400">{op.role}</span>
+                      <span className="text-[10px] text-slate-400">{op.role || 'Operator'}</span>
                     </div>
                   ))}
                 </div>
               </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Operator PIN
+                </label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  autoComplete="current-password"
+                  value={switchPin}
+                  onChange={(e) => setSwitchPin(e.target.value)}
+                  placeholder="Enter target operator PIN to continue"
+                  className="w-full p-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#2C75FF]"
+                />
+              </div>
+
+              {switchError && (
+                <div className="p-2.5 rounded-xl border border-red-200 bg-red-50 text-xs font-semibold text-red-600">
+                  {switchError}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-slate-100">
@@ -1193,9 +1329,10 @@ export default function RootDashboard() {
                 <button
                   type="button"
                   onClick={handleSwitchUserConfirm}
-                  className="px-4 py-2 text-xs font-bold text-white bg-[#2C75FF] hover:bg-blue-600 rounded-xl shadow-xs transition-colors cursor-pointer"
+                  disabled={switchLoading || !switchPin}
+                  className="px-4 py-2 text-xs font-bold text-white bg-[#2C75FF] hover:bg-blue-600 disabled:opacity-50 rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
-                  Switch to {switchTargetSystem}
+                  {switchLoading ? 'Verifying...' : `Switch to ${switchTargetSystem}`}
                 </button>
               </div>
             </div>
