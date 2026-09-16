@@ -75,21 +75,17 @@ body {
 
 @layer utilities {
   .document-paper {
-    width: 210mm;
-    min-height: 297mm;
-    padding: 15mm;
-    margin: 0 auto;
-    background-color: white;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    width: 100%;
     position: relative;
-    flex-shrink: 0;
     box-sizing: border-box;
+    font-family: 'Times New Roman', Times, serif;
   }
 
   .sale-deed-paper {
-    margin: 0 auto;
+    width: 100%;
     position: relative;
-    flex-shrink: 0;
+    box-sizing: border-box;
+    font-family: 'Times New Roman', Times, serif;
   }
 }
 
@@ -106,11 +102,6 @@ body {
   }
   .document-paper {
     width: 100% !important;
-    min-height: 297mm !important;
-    padding: 15mm !important;
-    margin: 0 !important;
-    background-color: white !important;
-    box-shadow: none !important;
     page-break-after: always;
   }
   .document-paper:last-child {
@@ -119,8 +110,6 @@ body {
 
   .sale-deed-paper {
     width: 100% !important;
-    min-height: 297mm !important;
-    box-shadow: none !important;
     page-break-after: always;
   }
   .sale-deed-paper:last-child {

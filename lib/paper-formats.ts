@@ -51,7 +51,7 @@ export const PAPER_FORMATS: Record<PaperFormatId, PaperFormatConfig> = {
     bottomMarginMm: 10,
     leftMarginMm: 15,
     rightMarginMm: 15,
-    headerReservedMm: 95,
+    headerReservedMm: 0,
     footerReservedMm: 35,
   },
   stamp_paper: {
@@ -64,7 +64,7 @@ export const PAPER_FORMATS: Record<PaperFormatId, PaperFormatConfig> = {
     bottomMarginMm: 10,
     leftMarginMm: 15,
     rightMarginMm: 15,
-    headerReservedMm: 100,
+    headerReservedMm: 0,
     footerReservedMm: 30,
   },
   id_card: {

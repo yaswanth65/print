@@ -20,11 +20,7 @@ export const PanInstantSignatureAffidavitPreview: React.FC = () => {
   return (
     <div className={styles['pan-container']}>
       <div className="document-paper">
-        <div className="${styles['pan-stamp']} print:hidden">
-          <span className="text-gray-400 font-sans text-xs tracking-widest uppercase font-semibold">
-            {isTe ? '[ 50 / 100 రూ. నాన్-జ్యుడీషియల్ స్టాంప్ పేపర్ స్థలము ]' : '[ 50 / 100 Rs. Non-Judicial Stamp Paper Space ]'}
-          </span>
-        </div>
+        
 
         <h1 className={styles['pan-title']}>
           {isTe

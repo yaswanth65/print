@@ -1,117 +1,109 @@
 import React from 'react';
 import { EditableField } from '@/components/shared/EditableField';
 import { useDocumentStore } from '@/store/useDocumentStore';
-import { formatTeluguValue } from '@/lib/teluguTransliteration';
 import styles from './singleWomenAffidavit.module.css';
 
 export const SingleWomenAffidavitPreview: React.FC = () => {
-  const { data, language } = useDocumentStore();
-  const isTe = language === 'te';
+  const { data } = useDocumentStore();
   const d = data.single_women_affidavit;
   const t = 'single_women_affidavit';
-
-  const deponentName = formatTeluguValue(d.deponentName, language);
-  const husbandName = formatTeluguValue(d.husbandName, language);
-  const fatherName = formatTeluguValue(d.fatherName, language);
-  const village = formatTeluguValue(d.village, language);
-  const mandal = formatTeluguValue(d.mandal, language);
-  const district = formatTeluguValue(d.district, language);
-  const occupation = formatTeluguValue(d.occupation, language);
-  const swearingPlace = formatTeluguValue(d.swearingPlace, language);
 
   return (
     <div className={styles['single-women-container']}>
       <div className="document-paper">
         <div>
-          <div className="${styles['single-women-stamp']} print:hidden">
-            <span className="text-gray-400 font-sans text-xs tracking-widest uppercase font-semibold">
-              {isTe ? '[ 50 / 100 రూ. నాన్-జ్యుడీషియల్ స్టాంప్ పేపర్ స్థలము ]' : '[ 50 / 100 Rs. Non-Judicial Stamp Paper Space ]'}
-            </span>
-          </div>
+          {/* Stamp Paper Top Space (Non-Judicial Stamp) */}
+          
 
+          {/* Heading */}
           <h1 className={styles['single-women-title']}>
-            {isTe ? 'డిక్లరేషన్ ప్రమాణ పత్రము' : 'AFFIDAVIT FOR DECLARATION OF'}<br />
-            <span className={styles['single-women-subtitle']}>
-              {isTe ? '“ఒంటరి మహిళ / SINGLE WOMEN”' : '“ONTARI MAHILA / SINGLE WOMEN”'}
-            </span>
+            AFFIDAVIT FOR DECLARATION OF
           </h1>
+          <h2 className={styles['single-women-subtitle']}>
+            “ONTARI &nbsp;MAHILA / SINGLE WOMEN’’
+          </h2>
 
-          {isTe ? (
-            <p className={styles['single-women-paragraph']}>
-              నేను, <span className="font-bold uppercase">{deponentName}</span>, భర్త: <span className="font-bold uppercase">{husbandName}</span>, తండ్రి: <span className="font-bold uppercase">{fatherName}</span>, వయస్సు: సుమారు <span className="font-medium">{d.age}</span> సంవత్సరములు, వృత్తి: <span className="font-medium uppercase">{occupation}</span>, నివాసం ఇంటి నెం. <span className="font-medium">{d.hNo}</span>, <span className="font-bold uppercase">{village}</span> గ్రామము, <span className="font-bold uppercase">{mandal}</span> మండలము, <span className="font-medium">{district}</span> జిల్లా, తెలంగాణ రాష్ట్రము, ఆధార్ నెం. <span className="font-bold">{d.aadharNumber}</span>, ఇందుమూలముగా దైవసాక్షిగా ప్రమాణం చేసి ఈ క్రింది వివరములు తెలియజేయుచున్నాను:-
-            </p>
-          ) : (
-            <p className={styles['single-women-paragraph']}>
-              I, <EditableField template={t} fieldPath="deponentName" value={d.deponentName} className="font-bold uppercase" />,{' '}
-              W/o <EditableField template={t} fieldPath="husbandName" value={d.husbandName} className="font-bold uppercase" />,{' '}
-              D/o <EditableField template={t} fieldPath="fatherName" value={d.fatherName} className="font-bold uppercase" />, aged about{' '}
-              <EditableField template={t} fieldPath="age" value={d.age} className="font-medium" /> Years, OCCU:{' '}
-              <EditableField template={t} fieldPath="occupation" value={d.occupation} className="font-medium uppercase" />, Resident of H.No.{' '}
-              <EditableField template={t} fieldPath="hNo" value={d.hNo} className="font-medium" />,{' '}
-              <EditableField template={t} fieldPath="village" value={d.village} className="font-bold uppercase" /> Village,{' '}
-              <EditableField template={t} fieldPath="mandal" value={d.mandal} className="font-bold uppercase" /> Mandal,{' '}
-              <EditableField template={t} fieldPath="district" value={d.district} className="font-medium" /> District, Telangana State, Aadhar No.{' '}
-              <EditableField template={t} fieldPath="aadharNumber" value={d.aadharNumber} className="font-bold" />, do hereby solemnly affirm and state on oath as under:-
-            </p>
-          )}
+          {/* Deponent Bio Introduction */}
+          <p className={styles['single-women-paragraph-noindent']}>
+            I, <EditableField template={t} fieldPath="applicantName" value={d.applicantName} className="font-bold uppercase" />
+            {', '}
+            <EditableField template={t} fieldPath="relation" value={d.relation} className="font-medium uppercase" />
+            {' '}
+            <EditableField template={t} fieldPath="relativeName" value={d.relativeName} className="font-bold uppercase" />, aged about:{' '}
+            <EditableField template={t} fieldPath="age" value={d.age} className="font-bold" /> Years, OCCU:{' '}
+            <EditableField template={t} fieldPath="occupation" value={d.occupation} className="font-bold uppercase" />, Resident of H.No.{' '}
+            <EditableField template={t} fieldPath="hNo" value={d.hNo} className="font-bold" />,{' '}
+            <EditableField template={t} fieldPath="village" value={d.village} className="font-bold uppercase" /> Village of{' '}
+            <EditableField template={t} fieldPath="mandal" value={d.mandal} className="font-bold uppercase" /> Mandal, District{' '}
+            <EditableField template={t} fieldPath="district" value={d.district} className="font-medium" />,{' '}
+            <EditableField template={t} fieldPath="state" value={d.state} className="font-medium" />, India, Pin Code No.{' '}
+            <EditableField template={t} fieldPath="pincode" value={d.pincode} className="font-medium" />, do hereby make oath and state as under:-
+          </p>
 
-          {isTe ? (
-            <div className="space-y-4 text-justify leading-relaxed">
-              <p>
-                1. నేను ఈ ప్రమాణ పత్రము చేయు దరఖాస్తుదారురాలను మరియు ఒంటరి మహిళను అని సత్యనిష్ఠతో తెలియజేయుచున్నాను.
-              </p>
-              <p>
-                2. నా భర్త అయిన <span className="font-bold uppercase">{husbandName}</span> నన్ను విడిచిపెట్టి సుమారు <span className="font-bold">{d.separatedYears}</span> సంవత్సరములు గడచినవి. అప్పటి నుండి నేను నా స్వశక్తితో ఒంటరిగా జీవించుచున్నాను.
-              </p>
-              <p>
-                3. నాకు ప్రభుత్వం నుండి ఎటువంటి పింఛను లేదా ఇతర నెలవారీ భృతి అందడం లేదు మరియు జీవనాధారము కొరకు ఒంటరి మహిళ పింఛను పథకము కొరకు దరఖాస్తు చేసుకొనుచున్నాను.
-              </p>
-              <p>
-                4. ఈ అఫిడవిట్ నందు పేర్కొన్న అంశములన్నియు నా పూర్తి వ్యక్తిగత జ్ఞానము మరియు నమ్మకము మేరకు సత్యమైనవని ధృవీకరించుచున్నాను.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4 text-justify leading-relaxed">
-              <p>
-                1. I state that I am the deponent herein and a resident of above said address living as a single woman.
-              </p>
-              <p>
-                2. I state that my husband <EditableField template={t} fieldPath="husbandName" value={d.husbandName} className="font-bold uppercase" /> separated from me around <EditableField template={t} fieldPath="separatedYears" value={d.separatedYears} className="font-bold" /> years ago and since then I am living independently without any support.
-              </p>
-              <p>
-                3. I state that I do not possess any government job or pension and I am submitting this affidavit for the purpose of Ontari Mahila (Single Women) Pension Scheme.
-              </p>
-              <p>
-                4. That the above facts stated are true and correct to the best of my knowledge and belief.
-              </p>
-            </div>
-          )}
-        </div>
+          {/* Clause 1: Identity & Aadhaar */}
+          <p className={styles['single-women-paragraph-noindent']}>
+            I state that I am the deponent herein and as such I am well acquainted with the facts of this affidavit and I am holder of Aadhar Card No.{' '}
+            <EditableField template={t} fieldPath="aadharNumber" value={d.aadharNumber} className="font-bold tracking-wide" />
+          </p>
 
-        <div className="mt-8">
-          <div className="text-right pr-6 mb-10">
-            <span className="font-bold tracking-wider">{isTe ? 'ప్రమాణకర్త (DEPONENT)' : 'DEPONENT'}</span>
+          {/* Clause 2: Marriage & Separation Statement */}
+          <p className={styles['single-women-paragraph']}>
+            I state that my marriage solemnized with{' '}
+            <EditableField template={t} fieldPath="exHusbandName" value={d.exHusbandName} className="font-bold uppercase" />, S/o.{' '}
+            <EditableField template={t} fieldPath="exHusbandFatherName" value={d.exHusbandFatherName} className="font-bold uppercase" />, Resident of{' '}
+            <EditableField template={t} fieldPath="exHusbandVillage" value={d.exHusbandVillage} className="font-bold uppercase" /> Village of{' '}
+            <EditableField template={t} fieldPath="exHusbandMandal" value={d.exHusbandMandal} className="font-medium uppercase" /> Mandal, Dist.{' '}
+            <EditableField template={t} fieldPath="district" value={d.district} className="font-medium" />, on{' '}
+            <EditableField template={t} fieldPath="marriageDate" value={d.marriageDate} className="font-medium" /> and afterwards my Divorce also effect{' '}
+            <EditableField template={t} fieldPath="divorceTime" value={d.divorceTime} className="font-medium" /> before the Caste elders of both parties., I state that I have no issues. and since then I have remarry to any body and I am living separately as <span className="font-bold uppercase">SINGLE WOMEN</span> only.,
+          </p>
+
+          {/* Clause 3: Request for Pension */}
+          <p className={styles['single-women-paragraph']}>
+            Hence I am requesting the concerned authority accept my <span className="font-bold uppercase">SINGLE WOMAN DELCARATION</span> and sanction me Telangana Govt. “<span className="font-bold">Ontari Mahila</span>”/Single Woman Pension” for my live hood.
+          </p>
+
+          {/* Clause 4: Verification Knowledge */}
+          <p className={styles['single-women-paragraph']}>
+            That the above content are true and correct to my personal knowledge and belief.
+          </p>
+
+          {/* Clause 5: Penal Undertaking */}
+          <p className={styles['single-women-paragraph']}>
+            Further I undertake that in future if my Statement found false or incorrect then myself held responsible for the same and liable for prosecution U/s. 236 and 237 BNS Act and other acts applicable from time to time.,
+          </p>
+
+          {/* Clause 6: Financial Undertaking */}
+          <p className={styles['single-women-paragraph']}>
+            Further I undertake that, in future if my claim found false or incorrect, then myself reimburse the amount which was received to me from the Government of Telangana under “<span className="font-bold">ONTARI MAHILA PENSION</span>”
+          </p>
+
+          {/* Closing & Deponent */}
+          <div className={styles['single-women-closing']}>
+            <div>Kindly accept my Self Declaration.</div>
+            <div className="font-bold uppercase tracking-wider">DEPONENT</div>
           </div>
 
-          <div className="border-t border-gray-300 pt-4 flex justify-between items-start">
+          {/* Signatures & Witnesses */}
+          <div className={styles['single-women-signatures']}>
+            <div className={styles['witness-block']}>
+              <div className="font-semibold mb-2">Witnesses:</div>
+              <div className="mb-4">1.</div>
+              <div>2.</div>
+            </div>
+            <div className={styles['deponent-block']}>
+              <EditableField template={t} fieldPath="applicantName" value={d.applicantName} className="font-bold uppercase" />
+            </div>
+          </div>
+
+          {/* Sworn Before */}
+          <div className={styles['attestation-block']}>
+            <div>Sworn and signed before me</div>
             <div>
-              <p className="font-bold mb-1">{isTe ? 'నా సమక్షములో ప్రమాణము చేసి సంతకము చేయబడినది' : 'Sworn and signed before me'}</p>
-              <p className="text-[10pt]">
-                {isTe ? 'తేదీ: ' : 'On '}
-                <EditableField template={t} fieldPath="swearingDate" value={d.swearingDate} className="font-bold" />
-                {isTe ? ' వద్ద: ' : ' at '}
-                <span className="font-bold uppercase">{swearingPlace}</span>
-              </p>
-              <div className="mt-8 border-t border-gray-400 w-48 pt-1 text-center text-xs font-bold uppercase text-gray-600">
-                {isTe ? 'న్యాయవాది / నోటరీ' : 'Advocate / Notary'}
-              </div>
-            </div>
-
-            <div className="text-right">
-              <p className="font-bold uppercase">{deponentName}</p>
-              <p className="text-[9pt] text-gray-600">{isTe ? 'దరఖాస్తుదారురాలు / సంతకము' : 'Applicant / Deponent'}</p>
+              On <EditableField template={t} fieldPath="affidavitDate" value={d.affidavitDate} className="font-medium" /> at <EditableField template={t} fieldPath="affidavitPlace" value={d.affidavitPlace} className="font-bold uppercase" />.
             </div>
           </div>
+
         </div>
       </div>
     </div>
