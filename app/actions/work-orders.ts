@@ -9,7 +9,7 @@ import { SESSION_COOKIE, SessionPayload, signSession, verifySessionToken, verify
 
 export async function getOperators() {
   try {
-    const list = await db
+    let list = await db
       .select({
         id: operators.id,
         name: operators.name,
@@ -20,6 +20,45 @@ export async function getOperators() {
       .from(operators)
       .where(eq(operators.active, true))
       .orderBy(operators.name);
+
+    if (list.length === 0) {
+      // Auto-seed for production if DB is empty
+      console.log('Database empty, auto-seeding operators...');
+      const OPERATORS_LIST = [
+        { name: 'Jagadeeshwar Dhondi', role: 'Senior Operator', pin: '1001' },
+        { name: 'Pradhyumn Dhondi', role: 'Chief Operator', pin: '1002' },
+        { name: 'Poshetty', role: 'Legal Documentation', pin: '1003' },
+        { name: 'Vennela', role: 'Forms & DTP', pin: '1004' },
+        { name: 'Manikanta', role: 'General Operator', pin: '1005' },
+      ];
+      
+      const { hashPin } = await import('@/lib/auth');
+      
+      for (let i = 0; i < OPERATORS_LIST.length; i++) {
+        const op = OPERATORS_LIST[i];
+        await db.insert(operators).values({
+          name: op.name,
+          system_name: `System ${i + 1}`,
+          role: op.role,
+          pin_hash: hashPin(op.pin),
+          active: true,
+        });
+      }
+      
+      // Re-fetch after seeding
+      list = await db
+        .select({
+          id: operators.id,
+          name: operators.name,
+          system_name: operators.system_name,
+          role: operators.role,
+          active: operators.active,
+        })
+        .from(operators)
+        .where(eq(operators.active, true))
+        .orderBy(operators.name);
+    }
+
     return { success: true, data: list };
   } catch (err: any) {
     console.error('getOperators error:', err);

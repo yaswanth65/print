@@ -249,14 +249,14 @@ const NAVBAR_MENU_CATEGORIES = [
   },
 ];
 
-// Exact 5 Operators requested
-const OPERATORS_LIST = [
-  { id: '1', name: 'Jagadeeshwar Dhondi', role: 'Senior Operator' },
-  { id: '2', name: 'Pradhyumn Dhondi', role: 'Chief Operator' },
-  { id: '3', name: 'Poshetty', role: 'Legal Documentation' },
-  { id: '4', name: 'Vennela', role: 'Forms & DTP' },
-  { id: '5', name: 'Manikanta', role: 'General Operator' },
-];
+  // Exact 5 Operators requested (Using dummy UUIDs for static fallback to pass regex validation if DB fails)
+  const OPERATORS_LIST = [
+    { id: '11111111-1111-1111-1111-111111111111', name: 'Jagadeeshwar Dhondi', role: 'Senior Operator' },
+    { id: '22222222-2222-2222-2222-222222222222', name: 'Pradhyumn Dhondi', role: 'Chief Operator' },
+    { id: '33333333-3333-3333-3333-333333333333', name: 'Poshetty', role: 'Legal Documentation' },
+    { id: '44444444-4444-4444-4444-444444444444', name: 'Vennela', role: 'Forms & DTP' },
+    { id: '55555555-5555-5555-5555-555555555555', name: 'Manikanta', role: 'General Operator' },
+  ];
 
 const SYSTEMS_LIST = [
   'System 1',
