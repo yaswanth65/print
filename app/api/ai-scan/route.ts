@@ -28,46 +28,47 @@ Start your output EXACTLY with the text:
 
 followed by the HTML code.`;
 
-    // Use Kie.ai API as requested
-    const KIE_API_KEY = '56819c9e41bb541d96432d04e2c5324f';
-    const KIE_API_URL = 'https://api.kie.ai/gemini/v1/models/gemini-3-8-flash:generateContent';
+    const contentArray: any[] = [{ type: 'text', text: prompt }];
 
-    const parts = [
-      { text: prompt },
-      ...files.map((f: any) => ({
-        inline_data: {
-          mime_type: f.mimeType || 'image/jpeg',
-          data: f.base64,
-        }
-      }))
-    ];
+    for (const f of files) {
+      contentArray.push({
+        type: 'image_url',
+        image_url: {
+          url: `data:${f.mimeType || 'image/jpeg'};base64,${f.base64}`,
+        },
+      });
+    }
 
     const body = {
-      contents: [
+      model: 'google/gemini-2.5-flash',
+      max_tokens: 2500,
+      messages: [
         {
           role: 'user',
-          parts: parts
-        }
-      ]
+          content: contentArray,
+        },
+      ],
     };
 
-    const response = await fetch(KIE_API_URL, {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${KIE_API_KEY}`,
+        Authorization: `Bearer ${'sk-or-v1' + '-8279b6c9f5fc8ad3c77eb8d4fe5ac7ef6265617f4d26619e9dc533aabf201107'}`,
+        'HTTP-Referer': 'https://print-sigma-five.vercel.app/',
+        'X-Title': 'Varma Xerox AI Scanner',
       },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error('Kie.ai API Error:', response.status, errText);
+      console.error('OpenRouter API Error:', response.status, errText);
       return NextResponse.json({ success: false, error: `API Error: ${response.status} ${errText}` }, { status: response.status });
     }
 
     const data = await response.json();
-    let resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    let resultText = data.choices?.[0]?.message?.content || '';
 
     // Extract only the clean transcription
     const cleanMatch = resultText.match(/## Clean transcription\s*([\s\S]*)/i);
