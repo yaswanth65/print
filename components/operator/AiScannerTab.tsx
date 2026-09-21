@@ -78,12 +78,9 @@ export default function AiScannerTab() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      // Convert Markdown-ish text to HTML basics
-      let html = data.text
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g, '<br/>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      html = `<p>${html}</p>`;
+      // We use pre-wrap so newlines and spaces are naturally preserved.
+      // We don't need to inject <br/> or <p> tags manually, which ruins spacing.
+      const html = data.text;
 
       setDocumentContent(html);
       saveToHistory(html);
@@ -275,7 +272,8 @@ export default function AiScannerTab() {
                   suppressContentEditableWarning
                   onInput={(e) => setDocumentContent(e.currentTarget.innerHTML)}
                   dangerouslySetInnerHTML={{ __html: documentContent }}
-                  className="w-full min-h-full outline-none focus:ring-2 focus:ring-blue-100 focus:ring-offset-8 rounded-sm"
+                  style={{ whiteSpace: 'pre-wrap' }}
+                  className="w-full min-h-full outline-none focus:ring-2 focus:ring-blue-100 focus:ring-offset-8 rounded-sm whitespace-pre-wrap"
                 />
               ) : (
                 <div className="w-full h-full min-h-[40vh] flex flex-col items-center justify-center text-slate-300">
