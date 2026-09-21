@@ -1,7 +1,7 @@
 import { PaperFormatId } from '@/lib/paper-formats';
 import { create } from 'zustand';
 
-export type TemplateType = 'rent_agreement' | 'affidavit' | 'sale_deed' | 'plot_agreement' | 'ssc_memo_affidavit' | 'cdma_death_correction' | 'lease_deed' | 'sbi_alias_general' | 'single_women_affidavit' | 'cv_resume' | 'identity_card' | 'bob_gold_loan_indemnity' | 'pan_instant_signature_affidavit';
+export type TemplateType = 'rent_agreement' | 'affidavit' | 'sale_deed' | 'plot_agreement' | 'ssc_memo_affidavit' | 'cdma_death_correction' | 'lease_deed' | 'sbi_alias_general' | 'single_women_affidavit' | 'cv_resume' | 'identity_card' | 'bob_gold_loan_indemnity' | 'pan_instant_signature_affidavit' | 'ai_scanned_document';
 export type EditMode = 'form' | 'direct';
 
 export type IdCardSide = 'front' | 'back' | 'both';

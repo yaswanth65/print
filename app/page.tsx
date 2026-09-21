@@ -64,6 +64,17 @@ interface WorkOrder {
 
 const TEMPLATE_DOCUMENTS = [
   {
+    id: 'ai_scanned_document' as TemplateType,
+    name: 'AI Scanned Document (Editable)',
+    category: 'Custom / Scanned',
+    folder: 'AI Scan',
+    pages: 'Auto',
+    lastModified: '21 Sep, 2026',
+    icon: FileText,
+    badge: 'AI Scan',
+    desc: 'Automatically detected layout & text from uploaded images or PDFs. Fully editable Telugu/English text.',
+  },
+  {
     id: 'identity_card' as TemplateType,
     name: 'Government Identity Card',
     category: 'Official ID / Passes',
