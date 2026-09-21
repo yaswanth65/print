@@ -21,25 +21,78 @@ export default function AiScannerTab() {
   const printRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    const saved = localStorage.getItem('ai_scanned_history');
-    if (saved) {
+    // Fetch from database
+    const fetchHistory = async () => {
       try {
-        setHistory(JSON.parse(saved));
-      } catch (e) {}
-    }
+        const res = await fetch('/api/history');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            const aiDocs = json.data
+              .filter((d: any) => d.document_type === 'AI Scanned Document')
+              .map((d: any) => ({
+                id: d.id,
+                date: new Date(d.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+                title: d.document_name,
+                content: typeof d.document_data === 'string' ? d.document_data : (d.document_data?.html || '')
+              }));
+            setHistory(aiDocs);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch history:', err);
+        // Fallback to local storage if DB fails
+        const saved = localStorage.getItem('ai_scanned_history');
+        if (saved) {
+          try {
+            setHistory(JSON.parse(saved));
+          } catch (e) {}
+        }
+      }
+    };
+    fetchHistory();
   }, []);
 
-  const saveToHistory = (content: string) => {
-    const id = Date.now().toString();
+  const saveToHistory = async (content: string) => {
+    let id = Date.now().toString(); // Fallback ID
+    const docName = `Scanned Document ${history.length + 1}`;
+    
     const newDoc: SavedDocument = {
       id,
       date: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
-      title: `Scanned Document ${history.length + 1}`,
+      title: docName,
       content
     };
+    
+    // Save to DB first to get real ID if possible
+    try {
+      const res = await fetch('/api/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_name: 'AI Scanner',
+          customer_contact: 'N/A',
+          document_type: 'AI Scanned Document',
+          document_name: docName,
+          document_data: content,
+          amount: 0,
+        })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data && json.data.id) {
+          id = json.data.id; // Use real DB ID
+          newDoc.id = id;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to save to DB:', err);
+    }
+
     const newHistory = [newDoc, ...history];
     setHistory(newHistory);
     localStorage.setItem('ai_scanned_history', JSON.stringify(newHistory));
+
     return id;
   };
 
@@ -81,14 +134,18 @@ export default function AiScannerTab() {
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
-      // We use pre-wrap so newlines and spaces are naturally preserved.
-      // We don't need to inject <br/> or <p> tags manually, which ruins spacing.
-      const html = data.text;
-
-      setDocumentContent(html);
-      const newId = saveToHistory(html);
-      setActiveDocId(newId);
-      setFiles([]);
+      if (data.html) {
+        setDocumentContent(data.html);
+        const newId = await saveToHistory(data.html);
+        setActiveDocId(newId);
+        setFiles([]);
+      } else if (data.text) { // fallback
+        const html = data.text;
+        setDocumentContent(html);
+        const newId = await saveToHistory(html);
+        setActiveDocId(newId);
+        setFiles([]);
+      }
     } catch (err: any) {
       alert(err.message || 'Error scanning document');
     } finally {
@@ -147,16 +204,32 @@ export default function AiScannerTab() {
 
         <div className="flex items-center gap-2">
             <button
-              onClick={() => {
+              onClick={async () => {
                 if (documentContent && activeDocId) {
-                  const newHistory = history.map(h => 
-                    h.id === activeDocId ? { ...h, content: documentContent } : h
+                  // Save locally
+                  const updatedHistory = history.map(doc => 
+                    doc.id === activeDocId ? { ...doc, content: documentContent } : doc
                   );
-                  setHistory(newHistory);
-                  localStorage.setItem('ai_scanned_history', JSON.stringify(newHistory));
-                  alert('Changes saved to history');
+                  setHistory(updatedHistory);
+                  localStorage.setItem('ai_scanned_history', JSON.stringify(updatedHistory));
+
+                  // Save to DB
+                  try {
+                    await fetch('/api/history', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        id: activeDocId,
+                        document_data: documentContent,
+                      })
+                    });
+                  } catch (err) {
+                    console.error('Failed to update DB:', err);
+                  }
+                  
+                  alert('Edits saved successfully!');
                 } else if (documentContent && !activeDocId) {
-                  const newId = saveToHistory(documentContent);
+                  const newId = await saveToHistory(documentContent);
                   setActiveDocId(newId);
                   alert('New document saved to history');
                 }

@@ -131,3 +131,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, document_data } = body;
+
+    if (!id || !document_data) {
+      return NextResponse.json({ success: false, error: 'ID and document_data are required' }, { status: 400 });
+    }
+
+    try {
+      const [updated] = await db
+        .update(documentHistory)
+        .set({ document_data: typeof document_data === 'string' ? document_data : JSON.stringify(document_data) })
+        .where(eq(documentHistory.id, id))
+        .returning();
+
+      if (updated) {
+        return NextResponse.json({ success: true, data: updated });
+      }
+    } catch (dbErr) {
+      console.warn('DB update failed', dbErr);
+    }
+    
+    return NextResponse.json({ success: false, error: 'Record not found or update failed' }, { status: 404 });
+  } catch (err: any) {
+    console.error('PUT /api/history error:', err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
