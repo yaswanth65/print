@@ -11,22 +11,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'No files provided' }, { status: 400 });
     }
 
-    const prompt = `Rules:
-1. Preserve the original meaning, wording, names, dates, numbers, blanks, punctuation, and document structure.
-2. Do not invent, guess, or silently complete text that is unclear.
-3. Correct obvious OCR errors only when the correction is strongly supported by context or the image.
-4. For uncertain text, use [unclear] or [possible: ...].
-5. Preserve handwritten or blank fields using placeholders such as: [date], [number of days], [name], [signature].
-6. Do not translate unless explicitly requested. Keep Telugu text in Telugu script.
-7. Preserve headings, paragraphs, lists, tables, and line breaks as much as possible.
-8. Separate transcription from interpretation. Do not summarize.
-9. Never fabricate personal information or document fields.
+    const prompt = `You are an expert document digitizer. Your task is to extract text from the provided image and output it as cleanly formatted, semantic HTML.
 
-Return ONLY the transcribed document content. Do not include introductory text like "Here is the transcription".
+RULES:
+1. Preserve the exact original meaning, wording, names, dates, numbers, blanks, and punctuation.
+2. Output ONLY raw HTML. Do not use markdown formatting like \`\`\`html.
+3. Use structural HTML: <p>, <ul>, <ol>, <li>, <table>, <tr>, <td>.
+4. ALIGNMENT IS CRITICAL: 
+   - If text is centered (like titles/headings), wrap it in <div style="text-align: center;">
+   - If text is right-aligned (like Dates at top right, or Signatures/Names at bottom right), wrap it in <div style="text-align: right;">
+   - Do NOT use multiple spaces or &nbsp; for alignment. Use text-align CSS.
+5. If there are tables, use <table style="width: 100%; border-collapse: collapse; border: 1px solid black;"> and add borders to <td>.
+6. For uncertain text, use [unclear]. For blank lines to be filled, use dots (e.g. .............) or underscores.
+7. Do not translate. Keep Telugu text in Telugu script.
+8. Never fabricate personal information or document fields.
+
 Start your output EXACTLY with the text:
 ## Clean transcription
 
-followed by the document text.`;
+followed by the HTML code.`;
 
     const contentArray: any[] = [{ type: 'text', text: prompt }];
 
@@ -40,7 +43,8 @@ followed by the document text.`;
     }
 
     const body = {
-      model: 'google/gemini-1.5-flash',
+      model: 'google/gemini-3.8-flash',
+      max_tokens: 2000,
       messages: [
         {
           role: 'user',
@@ -81,6 +85,9 @@ followed by the document text.`;
     } else {
       resultText = resultText.trim();
     }
+
+    // Strip markdown codeblocks if AI added them
+    resultText = resultText.replace(/^```html\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '');
 
     return NextResponse.json({ success: true, text: resultText });
   } catch (error: any) {

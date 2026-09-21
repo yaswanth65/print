@@ -1535,7 +1535,7 @@ export default function RootDashboard() {
 
           {/* TAB 5: AI SCANNER VIEW */}
           {activeTab === 'ai_scan' && (
-            <div className="max-w-7xl mx-auto h-[80vh]">
+            <div className="max-w-7xl mx-auto h-[calc(100vh-100px)]">
               <AiScannerTab />
             </div>
           )}

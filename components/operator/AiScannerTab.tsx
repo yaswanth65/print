@@ -248,8 +248,8 @@ export default function AiScannerTab() {
         </div>
 
         {/* Right Editor Area */}
-        <div className="flex-1 p-6 overflow-y-auto flex justify-center bg-slate-100/50">
-          <div className="relative shadow-sm border border-slate-200 bg-white w-[210mm] min-h-[297mm]">
+        <div className="flex-1 p-6 overflow-auto flex justify-center bg-slate-100/50">
+          <div className="relative shadow-sm border border-slate-200 bg-white w-[210mm] min-h-[297mm] shrink-0">
             <div 
               ref={printRef}
               className="w-full h-full p-[20mm] bg-white outline-none"
