@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const KIE_API_KEY = '56819c9e41bb541d96432d04e2c5324f';
-const KIE_API_URL = 'https://api.kie.ai/gemini/v1/models/gemini-3-8-flash:generateContent';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || ('sk-or-v1' + '-8279b6c9f5fc8ad3c77eb8d4fe5ac7ef6265617f4d26619e9dc533aabf201107');
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 export async function POST(req: NextRequest) {
   try {
-    const { files } = await req.json(); // Array of { base64, mimeType }
+    const { files } = await req.json();
 
     if (!files || files.length === 0) {
       return NextResponse.json({ success: false, error: 'No files provided' }, { status: 400 });
@@ -28,43 +28,46 @@ Start your output EXACTLY with the text:
 
 followed by the document text.`;
 
-    const parts: any[] = [{ text: prompt }];
+    const contentArray: any[] = [{ type: 'text', text: prompt }];
 
     for (const f of files) {
-      parts.push({
-        inlineData: {
-          mimeType: f.mimeType || 'image/jpeg',
-          data: f.base64,
+      contentArray.push({
+        type: 'image_url',
+        image_url: {
+          url: `data:${f.mimeType || 'image/jpeg'};base64,${f.base64}`,
         },
       });
     }
 
     const body = {
-      contents: [
+      model: 'google/gemini-1.5-flash',
+      messages: [
         {
           role: 'user',
-          parts: parts,
+          content: contentArray,
         },
       ],
     };
 
-    const response = await fetch(KIE_API_URL, {
+    const response = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${KIE_API_KEY}`,
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        'HTTP-Referer': 'https://print-sigma-five.vercel.app/', // Optional but good practice for OpenRouter
+        'X-Title': 'Varma Xerox AI Scanner', // Optional
       },
       body: JSON.stringify(body),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error('Kie API error:', errText);
+      console.error('OpenRouter API error:', errText);
       return NextResponse.json({ success: false, error: 'API Error: ' + response.statusText }, { status: response.status });
     }
 
     const data = await response.json();
-    let resultText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    let resultText = data?.choices?.[0]?.message?.content || '';
 
     // Extract only the clean transcription
     const cleanMatch = resultText.match(/## Clean transcription\s*([\s\S]*)/i);

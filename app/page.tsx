@@ -3,6 +3,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import SingleWomenAffidavitPreview from '@/templates/singleWomenAffidavit/SingleWomenAffidavitPreview';
+import AiScannedDocumentPreview from '@/templates/aiScannedDocument/AiScannedDocumentPreview';
+import AiScannerTab from '@/components/operator/AiScannerTab';
 import { useDocumentStore, TemplateType } from '@/store/useDocumentStore';
 import {
   FileText,
@@ -305,7 +308,7 @@ export default function RootDashboard() {
   const [switchLoading, setSwitchLoading] = useState(false);
 
   // Navigation tab
-  const [activeTab, setActiveTab] = useState<'files' | 'orders' | 'history' | 'pricing'>('files');
+  const [activeTab, setActiveTab] = useState<'files' | 'orders' | 'history' | 'pricing' | 'ai_scan'>('files');
 
   // History State
   const [historyList, setHistoryList] = useState<any[]>([]);
@@ -800,6 +803,20 @@ export default function RootDashboard() {
               }`}
             >
               <DollarSign className="w-5 h-5" />
+            </button>
+
+            <div className="w-6 border-b border-slate-200 my-1 mx-auto"></div>
+
+            <button
+              onClick={() => setActiveTab('ai_scan')}
+              title="AI Document Scanner"
+              className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
+                activeTab === 'ai_scan'
+                  ? 'bg-blue-50 text-[#2C75FF]'
+                  : 'text-[#525252] hover:text-[#0A0A0A] hover:bg-slate-100'
+              }`}
+            >
+              <FileText className="w-5 h-5" />
             </button>
 
             <button
@@ -1513,6 +1530,13 @@ export default function RootDashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB 5: AI SCANNER VIEW */}
+          {activeTab === 'ai_scan' && (
+            <div className="max-w-7xl mx-auto h-[80vh]">
+              <AiScannerTab />
             </div>
           )}
 
