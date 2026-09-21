@@ -50,11 +50,17 @@ followed by the HTML code.`;
       ],
     };
 
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      console.error('Missing OPENROUTER_API_KEY environment variable');
+      return NextResponse.json({ success: false, error: 'Server misconfiguration: Missing API Key' }, { status: 500 });
+    }
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${'sk-or-v1' + '-8279b6c9f5fc8ad3c77eb8d4fe5ac7ef6265617f4d26619e9dc533aabf201107'}`,
+        Authorization: `Bearer ${apiKey}`,
         'HTTP-Referer': 'https://print-sigma-five.vercel.app/',
         'X-Title': 'Varma Xerox AI Scanner',
       },
