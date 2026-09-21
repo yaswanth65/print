@@ -16,6 +16,7 @@ export default function AiScannerTab() {
   const [loading, setLoading] = useState(false);
   const [documentContent, setDocumentContent] = useState('');
   const [history, setHistory] = useState<SavedDocument[]>([]);
+  const [activeDocId, setActiveDocId] = useState<string | null>(null);
   
   const printRef = useRef<HTMLDivElement>(null);
   
@@ -29,8 +30,9 @@ export default function AiScannerTab() {
   }, []);
 
   const saveToHistory = (content: string) => {
+    const id = Date.now().toString();
     const newDoc: SavedDocument = {
-      id: Date.now().toString(),
+      id,
       date: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
       title: `Scanned Document ${history.length + 1}`,
       content
@@ -38,6 +40,7 @@ export default function AiScannerTab() {
     const newHistory = [newDoc, ...history];
     setHistory(newHistory);
     localStorage.setItem('ai_scanned_history', JSON.stringify(newHistory));
+    return id;
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +86,8 @@ export default function AiScannerTab() {
       const html = data.text;
 
       setDocumentContent(html);
-      saveToHistory(html);
+      const newId = saveToHistory(html);
+      setActiveDocId(newId);
       setFiles([]);
     } catch (err: any) {
       alert(err.message || 'Error scanning document');
@@ -118,6 +122,7 @@ export default function AiScannerTab() {
   const loadHistoryItem = (item: SavedDocument) => {
     if (confirm('Load this document? Any unsaved changes in the current editor will be lost.')) {
       setDocumentContent(item.content);
+      setActiveDocId(item.id);
     }
   };
 
@@ -141,20 +146,23 @@ export default function AiScannerTab() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              if (documentContent) {
-                const newHistory = [...history];
-                if (newHistory.length > 0) {
-                  newHistory[0].content = documentContent;
+            <button
+              onClick={() => {
+                if (documentContent && activeDocId) {
+                  const newHistory = history.map(h => 
+                    h.id === activeDocId ? { ...h, content: documentContent } : h
+                  );
                   setHistory(newHistory);
                   localStorage.setItem('ai_scanned_history', JSON.stringify(newHistory));
                   alert('Changes saved to history');
+                } else if (documentContent && !activeDocId) {
+                  const newId = saveToHistory(documentContent);
+                  setActiveDocId(newId);
+                  alert('New document saved to history');
                 }
-              }
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors cursor-pointer"
-          >
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+            >
             <Save className="w-3.5 h-3.5" />
             Save Edit
           </button>
