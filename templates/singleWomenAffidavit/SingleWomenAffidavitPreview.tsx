@@ -109,3 +109,5 @@ export const SingleWomenAffidavitPreview: React.FC = () => {
     </div>
   );
 };
+
+export default SingleWomenAffidavitPreview;

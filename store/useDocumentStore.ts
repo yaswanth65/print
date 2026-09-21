@@ -29,6 +29,7 @@ interface DocumentState {
     identity_card: any;
     bob_gold_loan_indemnity: any;
     pan_instant_signature_affidavit: any;
+    ai_scanned_document: any;
   };
   setActiveTemplate: (template: TemplateType) => void;
   setEditMode: (mode: EditMode) => void;
@@ -745,6 +746,7 @@ export const useDocumentStore = create<DocumentState>((set) => ({
     identity_card: initialIdentityCard,
     bob_gold_loan_indemnity: initialBobGoldLoanIndemnity,
     pan_instant_signature_affidavit: initialPanInstantSignatureAffidavit,
+    ai_scanned_document: {},
   },
   setActiveTemplate: (template) => set({ activeTemplate: template }),
   setEditMode: (mode) => set({ editMode: mode }),
